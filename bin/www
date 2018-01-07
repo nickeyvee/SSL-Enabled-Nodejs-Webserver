@@ -3,26 +3,15 @@
 /**
  * Module dependencies.
  */
-var fs = require('fs');
 var app = require('../app');
 var debug = require('debug')('nodejs-ssl:server');
-var https = require('https');
 var http = require('http');
-
-var key = fs.readFileSync('encryption/private.key');
-var cert = fs.readFileSync('encryption/oceandroplet.crt');
-// var ca = fs.readFileSync('encryption/intermediate.crt');
-
-var options = {
-   key: key,
-   cert: cert
- };
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '5000');
 app.set('port', port);
 
 /**
