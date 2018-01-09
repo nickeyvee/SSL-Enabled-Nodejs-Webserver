@@ -6,22 +6,22 @@ const expect = require('chai').expect;
 
 function importTest(name, path) {
    describe(name, function () {
-       require(path);
+      require(path);
    });
 }
 
-// a file that deosn't exist..yet.
+// a file that deoPn't exist..yet.
 // This is where you can put common modules
 // that are used in your tests :
 
 // var common = require("./common");
 
-describe("test entry point (top.js)", function () {
+describe("test entry point (main.js)\n", function () {
    beforeEach(function () {
-      console.log("running something before each test");
+      // console.log("running something before each test");
    });
 
-   // importTest("unit tests...", './path-to-spec.js');
+   importTest("Stock Info Service\n", './stockinfo.spec.js');
    // importTest("more unit tests...", './path-to-spec.js');
 
    after(function () {
