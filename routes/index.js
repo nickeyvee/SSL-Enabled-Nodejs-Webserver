@@ -5,11 +5,36 @@ var stocks = require('../services/stockinfo.js');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-   const info = stocks.localStockData.map(data => data['Meta Data']);
 
-   console.log(info);
+   const symbols = stocks.formatStockData()
+      .map(data => data);
 
-   res.render('index', { title: 'Express' });
+   res.render('index', {
+      title: 'Express + D3',
+      data: symbols
+   });
+});
+
+router.get('/stocks', function (req, res, next) {
+   res.json(stocks.formatStockData());
+});
+
+router.post('/add', function (req, res, next) {
+   const symbol = req.body.symbol;
+   console.log(symbol);
+
+   stocks.getOneStockBySymbol(symbol)
+      .then(data => {
+         stocks.storeStocksLocally(data);
+
+         const symbols = stocks.formatStockData()
+            .map(data => data);
+
+         res.render('index', {
+            title: 'Express + D3',
+            data: symbols
+         });
+      })
 });
 
 module.exports = router;

@@ -1,6 +1,67 @@
 <h1>{{title}}</h1>
 <p>Welcome to {{title}}</p>
 
-<div>
-   {{data}}
+<div class="container" style="width: 85%">
+   <div class="jumbotron">
+      <svg id="visualisation" width="1000" height="500"></svg>
+   </div>
+   <div class="row">
+      {{#each data }}
+      <div class="col s12 m4">
+         <div class="card" style="min-height: 80px;">
+            <div class="card-content">
+               <span class="card-title pull-left">{{ symbol }}</span>
+               <a href="#" class="pull-right">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+               </a>
+            </div>
+         </div>
+      </div>
+      {{/each}}
+
+      <div class="col s12 m4">
+         <div class="card" style="min-height: 80px;">
+            <div class="card-content">
+               <p>Enter a ticker</p>
+               <input id="ticker_symbol" type="text" placeholder="AAPL">
+            </div>
+            <div class="card-action">
+               <a href="javascript:;" onclick="addStock()">Add</a>
+            </div>
+         </div>
+      </div>
+   </div>
+
 </div>
+
+<script src="/common/jquery/jquery-3.2.1.min.js" charset="utf-8"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+   var vis = d3.select("#visualisation"),
+      WIDTH = 1000,
+      HEIGHT = 500,
+      MARGINS = {
+         top: 20,
+         right: 20,
+         bottom: 20,
+         left: 50
+      };
+
+   function addStock() {
+      const symbol = $('#ticker_symbol').val();
+      console.log(symbol);
+
+      $.ajax({
+         url: location.href + 'add',
+         method: 'POST',
+         data: {
+            'symbol': symbol
+         },
+         success: function () {
+            console.log('sucess!');
+            window.location.reload(true);
+         }
+      });
+   }
+</script>
+<script src="/common/materialize/js/materialize.min.js" charset="utf-8"></script>
