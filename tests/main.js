@@ -21,8 +21,8 @@ describe("test entry point (main.js)\n", function () {
       // console.log("running something before each test");
    });
 
-   importTest("Stock Info Service\n", './stockinfo.spec.js');
-   // importTest("more unit tests...", './path-to-spec.js');
+   // importTest("Alphavantage data service\n", './stockinfo.spec.js');
+   importTest("Yahoo Finance Service\n", './y-finance.spec.js');
 
    after(function () {
       //  process.exit();

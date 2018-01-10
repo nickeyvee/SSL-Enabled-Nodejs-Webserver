@@ -11,7 +11,7 @@
          <div class="card" style="min-height: 80px;">
             <div class="card-content">
                <span class="card-title pull-left">{{ symbol }}</span>
-               <a href="#" class="pull-right">
+               <a id="{{ symbol }}" class="remove-ticker pull-right" style="cursor: pointer;">
                   <i class="fa fa-times" aria-hidden="true"></i>
                </a>
             </div>
@@ -52,13 +52,33 @@
       console.log(symbol);
 
       $.ajax({
-         url: location.href + 'add',
+         url: '/add',
          method: 'POST',
          data: {
             'symbol': symbol
          },
-         success: function () {
-            console.log('sucess!');
+         success: function (msg) {
+            console.log("Data Deleted: " + msg);
+            window.location.reload(true);
+         }
+      });
+   }
+
+   $('.remove-ticker').click(el => {
+      removeStock(el.currentTarget.id);
+   })
+
+   function removeStock(symbol) {
+      console.log(symbol);
+
+      $.ajax({
+         type: "DELETE",
+         url: '/remove',
+         data: {
+            'symbol': symbol
+         },
+         success: function (msg) {
+            console.log("Data Deleted: " + msg);
             window.location.reload(true);
          }
       });

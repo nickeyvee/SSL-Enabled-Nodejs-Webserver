@@ -6,7 +6,7 @@
 var app = require('../app');
 var debug = require('debug')('nodejs-ssl:server');
 var http = require('http');
-var stocks = require('../services/stockinfo.js');
+var yahoo = require('../services/y-finance.js');
 
 /**
  * Get port from environment and store in Express.
@@ -26,9 +26,9 @@ var server = http.createServer(app);
  * Provide default stock ticker info on server start.
  */
 
-stocks.getStocksBySymbol(['MSFT', 'AMZN', 'TSLA'])
+yahoo.getStocksBySymbol(['MSFT', 'AMZN', 'TSLA'])
    .then(data => {
-      stocks.storeStocksLocally(data);
+      yahoo.storeStocksLocally(data);
       server.listen(port);
    })
 server.on('error', onError);

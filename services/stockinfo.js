@@ -1,14 +1,10 @@
 'use strict';
+
+// ==== ALPHAVANTAGE API SERVICE ====
+
 const request_promise = require('request-promise');
 const key = process.env.API_KEY;
-
 const localStockData = [];
-
-const timePeriod = {
-   'TIME_SERIES_DAILY': 'Time Series (Daily)',
-   'TIME_SERIES_WEEKLY': 'Weekly Time Series',
-   'TIME_SERIES_MONTHLY': 'Monthly Time Series'
-}
 
 function deleteLocalStockData() {
    localStockData.length = 0;
@@ -32,7 +28,6 @@ function getStocksBySymbol(symbols, timePeriod) {
             return JSON.parse(data);
          })
    });
-
    return Promise.all(urlPromises);
 }
 

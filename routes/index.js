@@ -1,40 +1,40 @@
 var express = require('express');
 var router = express.Router();
 
-var stocks = require('../services/stockinfo.js');
+var yahoo = require('../services/y-finance.js');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
 
-   const symbols = stocks.formatStockData()
-      .map(data => data);
-
    res.render('index', {
       title: 'Express + D3',
-      data: symbols
+      data: yahoo.getSavedStockNames()
    });
 });
 
-router.get('/stocks', function (req, res, next) {
-   res.json(stocks.formatStockData());
-});
+// router.get('/stocks', function (req, res, next) {
+//    res.json(stocks.formatStockData());
+// });
 
 router.post('/add', function (req, res, next) {
    const symbol = req.body.symbol;
    console.log(symbol);
 
-   stocks.getOneStockBySymbol(symbol)
+   yahoo.getOneStockBySymbol(symbol)
       .then(data => {
-         stocks.storeStocksLocally(data);
+         yahoo.storeStocksLocally(data);
 
-         const symbols = stocks.formatStockData()
-            .map(data => data);
-
-         res.render('index', {
-            title: 'Express + D3',
-            data: symbols
-         });
+         res.send('Added successfully');
       })
 });
+
+router.delete('/remove', function(req, res, next) {
+   const symbol = req.body.symbol;
+   // console.log(symbol);
+
+   yahoo.removeStock(symbol)
+
+   res.send('Removed stock successfully');   
+})
 
 module.exports = router;
