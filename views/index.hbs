@@ -1,13 +1,14 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
-
 <div class="container" style="width: 85%">
+   <div class="row">
+      <h1>{{title}}</h1>
+      <p>Welcome to {{title}}</p>
+   </div>
    <div class="row">
       <svg id="visualisation" width="100%" height="500"></svg>
    </div>
    <div class="row">
       {{#each data }}
-      <div class="col s12 m4">
+      <div class="col s12 m12 l4">
          <div class="card" style="min-height: 80px;">
             <div class="card-content">
                <span class="card-title pull-left">{{ symbol }}</span>
@@ -19,7 +20,7 @@
       </div>
       {{/each}}
 
-      <div class="col s12 m4">
+      <div class="col s12 m12 l4">
          <div class="card" style="min-height: 80px;">
             <div class="card-content">
                <p>Enter a ticker</p>

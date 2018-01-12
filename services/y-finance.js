@@ -100,7 +100,7 @@ function mapStocksByDateAndPrice(stockData) {
          .map(data => {
             const date = new Date(data.date);
             return {
-               'ISOdate': data.date,
+               'ISO': data.date,
                'date': `${date.getMonth() + 1}/${date.getDate() + 1}/${date.getFullYear()}`,
                'price': data.close
             }
