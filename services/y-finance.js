@@ -88,14 +88,39 @@ function storeStocksLocally(stockData) {
    }
 }
 
+function mapStocksByDateAndPrice(stockData) {
+
+   if (!Array.isArray(stockData)) {
+      throw new TypeError('only accepts an array type.');
+   }
+   const result = [];
+   
+   for (let stock of localStockData) {
+      const data = stock.data
+         .map(data => {
+            const date = new Date(data.date);
+            return {
+               'ISOdate': data.date,
+               'date': `${date.getMonth() + 1}/${date.getDate() + 1}/${date.getFullYear()}`,
+               'price': data.close
+            }
+         })
+      result.push({
+         'symbol': stock.symbol,
+         'data': data
+      })
+   }
+   return result;
+}
+
 function removeStock(symbol) {
    let index;
-   for(let i = 0; i < localStockData.length; i++ ) {
-      if(localStockData[i].symbol === symbol) {
+   for (let i = 0; i < localStockData.length; i++) {
+      if (localStockData[i].symbol === symbol) {
          index = i;
       }
    }
-   if(index !== -1) {
+   if (index !== -1) {
       localStockData.splice(index, 1);
    }
 }
@@ -109,6 +134,7 @@ module.exports = {
    getOneStockBySymbol,
    storeStocksLocally,
    getSavedStockNames,
+   mapStocksByDateAndPrice,
    localStockData,
    removeStock
 }

@@ -12,13 +12,15 @@ router.get('/', function (req, res, next) {
    });
 });
 
-// router.get('/stocks', function (req, res, next) {
-//    res.json(stocks.formatStockData());
-// });
+router.get('/stocks', function (req, res, next) {
+   const mappedData = yahoo.mapStocksByDateAndPrice(yahoo.localStockData);
+
+   res.json(mappedData);
+});
 
 router.post('/add', function (req, res, next) {
    const symbol = req.body.symbol;
-   console.log(symbol);
+   // console.log(symbol);
 
    yahoo.getOneStockBySymbol(symbol)
       .then(data => {
@@ -31,7 +33,6 @@ router.post('/add', function (req, res, next) {
 router.delete('/remove', function(req, res, next) {
    const symbol = req.body.symbol;
    // console.log(symbol);
-
    yahoo.removeStock(symbol)
 
    res.send('Removed stock successfully');   

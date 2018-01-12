@@ -17,6 +17,7 @@
     "pm2": "^2.9.1",
     "request-promise": "^4.2.2",
     "serve-favicon": "~2.4.5",
+    "socket.io": "^2.0.4",
     "yahoo-finance": "^0.3.5"
   },
   "devDependencies": {

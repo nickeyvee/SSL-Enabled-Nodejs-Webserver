@@ -2,8 +2,8 @@
 <p>Welcome to {{title}}</p>
 
 <div class="container" style="width: 85%">
-   <div class="jumbotron">
-      <svg id="visualisation" width="1000" height="500"></svg>
+   <div class="row">
+      <svg id="visualisation" width="100%" height="500"></svg>
    </div>
    <div class="row">
       {{#each data }}
@@ -33,55 +33,7 @@
    </div>
 
 </div>
-
 <script src="/common/jquery/jquery-3.2.1.min.js" charset="utf-8"></script>
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script>
-   var vis = d3.select("#visualisation"),
-      WIDTH = 1000,
-      HEIGHT = 500,
-      MARGINS = {
-         top: 20,
-         right: 20,
-         bottom: 20,
-         left: 50
-      };
-
-   function addStock() {
-      const symbol = $('#ticker_symbol').val();
-      console.log(symbol);
-
-      $.ajax({
-         url: '/add',
-         method: 'POST',
-         data: {
-            'symbol': symbol
-         },
-         success: function (msg) {
-            console.log("Data Deleted: " + msg);
-            window.location.reload(true);
-         }
-      });
-   }
-
-   $('.remove-ticker').click(el => {
-      removeStock(el.currentTarget.id);
-   })
-
-   function removeStock(symbol) {
-      console.log(symbol);
-
-      $.ajax({
-         type: "DELETE",
-         url: '/remove',
-         data: {
-            'symbol': symbol
-         },
-         success: function (msg) {
-            console.log("Data Deleted: " + msg);
-            window.location.reload(true);
-         }
-      });
-   }
-</script>
+<script src="/javascripts/common.js" charset="utf-8"></script>
 <script src="/common/materialize/js/materialize.min.js" charset="utf-8"></script>
