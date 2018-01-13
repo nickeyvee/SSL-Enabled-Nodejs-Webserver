@@ -1,22 +1,29 @@
+// global.jQuery = require("jquery");
+
+const $ = require("jquery");
+const d3 = require('d3');
+const io = require('socket.io-client');
+
 // make connection with websockets
 
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
 
 // get stock data into our app immediately
+console.log('bundle.js works');
 
 $.ajax({
    url: '/stocks',
    method: 'GET'
 }).then(function (data) {
+   console.log(data);
 
    // store in client.
    data.map(stock => {
       historicalData.push(stock);
    })
 
-   plotStock(searchStock('TSLA'))
-
+   plotStock(searchStock('TSLA'));
    // console.log(searchStock('TSLA'));
 });
 
@@ -95,7 +102,7 @@ function plotStock(stock) {
       .range([MARGINS.left, WIDTH - MARGINS.right])
       .domain([new Date(date_left.ISO), new Date(date_right.ISO)]);
 
-      console.log([new Date(date_left.ISO), new Date(date_right.ISO)])
+   console.log([new Date(date_left.ISO), new Date(date_right.ISO)])
 
 
    const yScale = d3.scale
@@ -103,7 +110,7 @@ function plotStock(stock) {
       .range([HEIGHT - MARGINS.top, MARGINS.bottom])
       .domain([price_left, price_right]);
 
-      console.log([price_left, price_right]);
+   console.log([price_left, price_right]);
 
    const xAxis = d3.svg.axis()
       .scale(xScale);
@@ -138,6 +145,7 @@ function plotStock(stock) {
       .attr('stroke', 'green')
       .attr('stroke-width', 2)
       .attr('fill', 'none');
+      console.log("shit's not broke?");
 }
 
 
@@ -151,4 +159,4 @@ $('.select-ticker').click(el => {
    d3.selectAll("g").remove();
    plotStock(searchStock(symbol));
 
-})
+});
