@@ -1,3 +1,6 @@
 /node_modules
-/public/common
+/public/font-awesome
+/public/jquery
+/public/materialize
+/common_2.js
 notes.txt
