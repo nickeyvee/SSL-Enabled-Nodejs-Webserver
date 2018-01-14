@@ -52,7 +52,7 @@ describe('storeStocksLocally', function () {
 });
 
 describe('mapStocksByDateAndPrice', function () {
-   it('it should return list of stocks in proper format', function () {
+   it('it should return list of stocks in proper format\n', function () {
       const mappedData = yahoo.mapStocksByDateAndPrice(yahoo.localStockData);
 
       expect(yahoo.localStockData).to.have.a.lengthOf(3);

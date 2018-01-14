@@ -4,8 +4,8 @@
    "private": true,
    "scripts": {
       "start": "nodemon ./bin/www",
-      "build": "browserify main.js -o ./public/bundle.js",
-      "watch": "watchify main.js -o ./public/bundle.js",
+      "build": "browserify ./src/main.js -o ./public/bundle.js",
+      "watch": "watchify ./src/main.js -o ./public/bundle.js",
       "test": "mocha ./tests/main",
       "stop": "pm2 kill"
    },

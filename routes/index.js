@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var fs = require('fs');
 
 var yahoo = require('../services/y-finance.js');
 
@@ -14,6 +15,10 @@ router.get('/', function (req, res, next) {
 
 router.get('/stocks', function (req, res, next) {
    const mappedData = yahoo.mapStocksByDateAndPrice(yahoo.localStockData);
+
+   // PRODUCE A JSON DOC FOR TESTS.
+   // const json = JSON.stringify(mappedData);
+   // fs.writeFile('./tests/mocks/mockfile.json', json, 'utf8');
 
    res.json(mappedData);
 });

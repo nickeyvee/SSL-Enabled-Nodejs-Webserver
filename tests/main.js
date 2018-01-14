@@ -23,6 +23,7 @@ describe("test entry point (main.js)\n", function () {
 
    // importTest("Alphavantage data service\n", './stockinfo.spec.js');
    importTest("Yahoo Finance Service\n", './y-finance.spec.js');
+   importTest("Client-side Helper Functions\n", './helpers.spec.js');   
 
    after(function () {
       //  process.exit();
