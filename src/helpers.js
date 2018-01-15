@@ -1,35 +1,41 @@
 'use strict';
 
-function searchByTickerName(dataArr, symbol) {
-   return dataArr.find(stock => stock.symbol === symbol);
-}
+module.exports = (function () {
 
-/**
- * mapStockData() will make sure the data from our server is
- * consumable by the D3.js API.
- */
+   /**
+    * mapDataByTickerName() will make sure the data from our server is
+    * consumable by the D3.js API.
+    */
 
-function mapStockData(res) {
+   function getDataByTickerName(data, symbol) {
 
-   const date_arr = res.data.map(stock => stock),
-      date_left = res.data[res.data.length - 1],
-      date_right = res.data[0],
+      /**
+       * 1) return the stock we are looking for
+       * 2) map it's data and return it
+       */
+      const stock_data = data.find(stock => stock.symbol === symbol);
 
-      price_arr = res.data.map(stock => stock.price),
-      price_top = Math.max.apply(Math, price_arr),
-      price_bottom = Math.min.apply(Math, price_arr);
+      const data_all = stock_data.data.map(d => d);
+
+      const date_ISO = stock_data.data.map(d => d.ISO),
+         date_left = date_ISO[date_ISO.length - 1],
+         date_right = date_ISO[0],
+
+         price_arr = stock_data.data.map(stock => stock.price),
+         price_top = Math.max.apply(Math, price_arr),
+         price_bottom = Math.min.apply(Math, price_arr);
+
+      return {
+         "data_all": data_all,
+         "date_left": date_left,
+         "date_right": date_right,
+         "price_arr": price_arr,
+         "price_top": price_top,
+         "price_bottom": price_bottom
+      }
+   }
 
    return {
-      "date_arr": date_arr,
-      "date_left": date_left,
-      "date_right": date_right,
-      "price_arr": price_arr,
-      "price_top": price_top,
-      "price_bottom": price_bottom
+      "mapData": getDataByTickerName
    }
-}
-
-module.exports = {
-   searchByTickerName,
-   mapStockData
-}
+}());

@@ -26186,39 +26186,45 @@ module.exports = yeast;
 },{}],45:[function(require,module,exports){
 'use strict';
 
-function searchByTickerName(dataArr, symbol) {
-   return dataArr.find(stock => stock.symbol === symbol);
-}
+module.exports = (function () {
 
-/**
- * mapStockData() will make sure the data from our server is
- * consumable by the D3.js API.
- */
+   /**
+    * mapDataByTickerName() will make sure the data from our server is
+    * consumable by the D3.js API.
+    */
 
-function mapStockData(res) {
+   function getDataByTickerName(data, symbol) {
 
-   const date_arr = res.data.map(stock => stock),
-      date_left = res.data[res.data.length - 1],
-      date_right = res.data[0],
+      /**
+       * 1) return the stock we are looking for
+       * 2) map it's data and return it
+       */
+      const stock_data = data.find(stock => stock.symbol === symbol);
 
-      price_arr = res.data.map(stock => stock.price),
-      price_top = Math.max.apply(Math, price_arr),
-      price_bottom = Math.min.apply(Math, price_arr);
+      const data_all = stock_data.data.map(d => d);
+
+      const date_ISO = stock_data.data.map(d => d.ISO),
+         date_left = date_ISO[date_ISO.length - 1],
+         date_right = date_ISO[0],
+
+         price_arr = stock_data.data.map(stock => stock.price),
+         price_top = Math.max.apply(Math, price_arr),
+         price_bottom = Math.min.apply(Math, price_arr);
+
+      return {
+         "data_all": data_all,
+         "date_left": date_left,
+         "date_right": date_right,
+         "price_arr": price_arr,
+         "price_top": price_top,
+         "price_bottom": price_bottom
+      }
+   }
 
    return {
-      "date_arr": date_arr,
-      "date_left": date_left,
-      "date_right": date_right,
-      "price_arr": price_arr,
-      "price_top": price_top,
-      "price_bottom": price_bottom
+      "mapData": getDataByTickerName
    }
-}
-
-module.exports = {
-   searchByTickerName,
-   mapStockData
-}
+}());
 },{}],46:[function(require,module,exports){
 'use strict';
 
@@ -26233,14 +26239,14 @@ const chart = require('./stockchart.js');
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
 
-console.log('bundle.js works');
+//console.log('bundle.js works');
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
  * 
  */
 
- // get stock data into our app immediately..
+// get stock data into our app immediately..
 
 $.ajax({
    url: '/stocks',
@@ -26252,9 +26258,7 @@ $.ajax({
    })
    // plots ONE stock on init.
    chart.plotStock(
-      helper.mapStockData(
-         helper.searchByTickerName(historicalData, 'TSLA')
-      )
+      helper.mapData(historicalData, historicalData[0].symbol)
    )
 });
 
@@ -26268,9 +26272,23 @@ function addStock() {
       data: {
          'symbol': symbol
       },
-      success: function (msg) {
-         console.log("Data Deleted: " + msg);
-         window.location.reload(true);
+      success: function (data) {
+         console.log("Data Added");
+         console.log(data);
+
+         addTickerBox(symbol);
+
+         historicalData.length = 0;
+
+         data.map(stock => {
+            historicalData.push(stock);
+         })
+
+         chart.resetChart();
+
+         chart.plotStock(
+            helper.mapData(historicalData, symbol)
+         )
       }
    });
 }
@@ -26282,35 +26300,87 @@ function removeStock(symbol) {
       data: {
          'symbol': symbol
       },
-      success: function (msg) {
-         console.log("Data Deleted: " + msg);
-         window.location.reload(true);
+      success: function (data) {
+         console.log("Data Deleted");
+         console.log(data);
+
+         // THIS IS CAUSING PROBLEMS
+
+         $(`#${symbol}`).parent().remove();
+         $(`#${symbol}`).remove();
+
+         historicalData.splice(0, historicalData.length);
+
+         data.map(stock => {
+            historicalData.push(stock);
+         })
+
+         chart.resetChart();
+
+         if (historicalData[0]) {
+            chart.plotStock(
+               helper.mapData(historicalData, historicalData[0].symbol)
+            )
+         }
       }
    });
 }
 
 // ==== USER EVENT REGISTRATION ====
 
-$('.add-stock').click(el => {
-   addStock();
-})
+function addStockEvent() {
+   $('.add-stock').click(el => {
+      console.log('added stock');
+      addStock();
+   })
+}
 
-$('.remove-ticker').click(el => {
-   removeStock(el.currentTarget.id);
-})
+
+function deleteStockEvent(target) {
+   $(target).click(el => {
+      removeStock(el.currentTarget.id);
+   });
+}
+
+// initialize..
+addStockEvent();
+deleteStockEvent('.remove-ticker');
 
 
 // ==== CHANGE GRAPH STATE ====
 
-$('.select-ticker').click(el => {
-   const symbol = el.currentTarget.id;
-   chart.resetChart();
-   chart.plotStock(
-      helper.mapStockData(
-         helper.searchByTickerName(historicalData, symbol)
-      )
-   );
-});
+function toggleStockChart(symbol) {
+   $(symbol).click(el => {
+      const symbol = el.currentTarget.id;
+      chart.resetChart();
+      chart.plotStock(
+         helper.mapData(historicalData, symbol)
+      );
+   });
+}
+
+//init..
+toggleStockChart('.select-ticker');
+
+function addTickerBox(symbol) {
+   $('#tickerbox').before(
+      `
+   <div class="col s12 m12 l4">
+      <div class="card select-ticker align-left" id="${symbol}" style="min-height: 80px;">
+         <div class="card-content">
+            <span class="card-title pull-left">${symbol}</span>
+            <a id="${symbol}" class="remove-ticker pull-right" style="cursor: pointer;">
+               <i class="fa fa-times" aria-hidden="true">
+            </i></a>
+         </div>
+      </div>
+   </div>
+   `);
+
+   deleteStockEvent(`a#${symbol}`);
+   toggleStockChart(`.select-ticker#${symbol}`);
+   // must re-add event
+}
 },{"./helpers.js":45,"./stockchart.js":47,"jquery":29,"socket.io-client":34}],47:[function(require,module,exports){
 'use strict';
 
@@ -26338,16 +26408,14 @@ function plotStock(data) {
 
    const xScale = d3.time.scale()
       .range([MARGINS.left, WIDTH - MARGINS.right])
-      .domain([new Date(data.date_left.ISO), new Date(data.date_right.ISO)]);
+      .domain([new Date(data.date_left), new Date(data.date_right)]);
 
-   // console.log([new Date(data.date_left.ISO), new Date(data.date_right.ISO)])
 
    const yScale = d3.scale
       .linear()
       .range([HEIGHT - MARGINS.top, MARGINS.bottom])
       .domain([data.price_bottom, data.price_top]);
 
-   // console.log([data.price_bottom, data.price_top]);
 
    const xAxis = d3.svg.axis()
       .scale(xScale);
@@ -26378,11 +26446,10 @@ function plotStock(data) {
       });
 
    vis.append('svg:path')
-      .attr('d', lineGen(data.date_arr))
+      .attr('d', lineGen(data.data_all))
       .attr('stroke', 'green')
       .attr('stroke-width', 2)
       .attr('fill', 'none');
-   console.log("shit's not broke?");
 }
 
 function resetChart() {

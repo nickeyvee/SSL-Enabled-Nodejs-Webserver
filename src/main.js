@@ -11,14 +11,14 @@ const chart = require('./stockchart.js');
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
 
-console.log('bundle.js works');
+//console.log('bundle.js works');
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
  * 
  */
 
- // get stock data into our app immediately..
+// get stock data into our app immediately..
 
 $.ajax({
    url: '/stocks',
@@ -30,9 +30,7 @@ $.ajax({
    })
    // plots ONE stock on init.
    chart.plotStock(
-      helper.mapStockData(
-         helper.searchByTickerName(historicalData, 'TSLA')
-      )
+      helper.mapData(historicalData, historicalData[0].symbol)
    )
 });
 
@@ -46,9 +44,23 @@ function addStock() {
       data: {
          'symbol': symbol
       },
-      success: function (msg) {
-         console.log("Data Deleted: " + msg);
-         window.location.reload(true);
+      success: function (data) {
+         console.log("Data Added");
+         console.log(data);
+
+         addTickerBox(symbol);
+
+         historicalData.length = 0;
+
+         data.map(stock => {
+            historicalData.push(stock);
+         })
+
+         chart.resetChart();
+
+         chart.plotStock(
+            helper.mapData(historicalData, symbol)
+         )
       }
    });
 }
@@ -60,32 +72,84 @@ function removeStock(symbol) {
       data: {
          'symbol': symbol
       },
-      success: function (msg) {
-         console.log("Data Deleted: " + msg);
-         window.location.reload(true);
+      success: function (data) {
+         console.log("Data Deleted");
+         console.log(data);
+
+         // THIS IS CAUSING PROBLEMS
+
+         $(`#${symbol}`).parent().remove();
+         $(`#${symbol}`).remove();
+
+         historicalData.splice(0, historicalData.length);
+
+         data.map(stock => {
+            historicalData.push(stock);
+         })
+
+         chart.resetChart();
+
+         if (historicalData[0]) {
+            chart.plotStock(
+               helper.mapData(historicalData, historicalData[0].symbol)
+            )
+         }
       }
    });
 }
 
 // ==== USER EVENT REGISTRATION ====
 
-$('.add-stock').click(el => {
-   addStock();
-})
+function addStockEvent() {
+   $('.add-stock').click(el => {
+      console.log('added stock');
+      addStock();
+   })
+}
 
-$('.remove-ticker').click(el => {
-   removeStock(el.currentTarget.id);
-})
+
+function deleteStockEvent(target) {
+   $(target).click(el => {
+      removeStock(el.currentTarget.id);
+   });
+}
+
+// initialize..
+addStockEvent();
+deleteStockEvent('.remove-ticker');
 
 
 // ==== CHANGE GRAPH STATE ====
 
-$('.select-ticker').click(el => {
-   const symbol = el.currentTarget.id;
-   chart.resetChart();
-   chart.plotStock(
-      helper.mapStockData(
-         helper.searchByTickerName(historicalData, symbol)
-      )
-   );
-});
+function toggleStockChart(symbol) {
+   $(symbol).click(el => {
+      const symbol = el.currentTarget.id;
+      chart.resetChart();
+      chart.plotStock(
+         helper.mapData(historicalData, symbol)
+      );
+   });
+}
+
+//init..
+toggleStockChart('.select-ticker');
+
+function addTickerBox(symbol) {
+   $('#tickerbox').before(
+      `
+   <div class="col s12 m12 l4">
+      <div class="card select-ticker align-left" id="${symbol}" style="min-height: 80px;">
+         <div class="card-content">
+            <span class="card-title pull-left">${symbol}</span>
+            <a id="${symbol}" class="remove-ticker pull-right" style="cursor: pointer;">
+               <i class="fa fa-times" aria-hidden="true">
+            </i></a>
+         </div>
+      </div>
+   </div>
+   `);
+
+   deleteStockEvent(`a#${symbol}`);
+   toggleStockChart(`.select-ticker#${symbol}`);
+   // must re-add event
+}

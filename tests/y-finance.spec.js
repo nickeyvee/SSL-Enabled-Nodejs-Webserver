@@ -65,3 +65,11 @@ describe('mapStocksByDateAndPrice', function () {
       expect(mappedData[0].data[0].price).to.exist;
    })
 });
+
+describe('removeStock', function() {
+   it('should reflect changes', function() {
+      expect(yahoo.localStockData).to.have.lengthOf(3);      
+      yahoo.removeStock('TSLA');
+      expect(yahoo.localStockData).to.have.lengthOf(2);
+   })
+})

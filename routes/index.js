@@ -31,16 +31,24 @@ router.post('/add', function (req, res, next) {
       .then(data => {
          yahoo.storeStocksLocally(data);
 
-         res.send('Added successfully');
+         res.json(
+            yahoo.mapStocksByDateAndPrice(
+               yahoo.localStockData
+            )
+         );
       })
 });
 
-router.delete('/remove', function(req, res, next) {
+router.delete('/remove', function (req, res, next) {
    const symbol = req.body.symbol;
    // console.log(symbol);
    yahoo.removeStock(symbol)
 
-   res.send('Removed stock successfully');   
+   res.json(
+      yahoo.mapStocksByDateAndPrice(
+         yahoo.localStockData
+      )
+   )
 })
 
 module.exports = router;

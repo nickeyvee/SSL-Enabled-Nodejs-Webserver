@@ -35,8 +35,8 @@
    </div>
    <div class="row">
       {{#each data }}
-      <div class="col s12 m12 l4">
-         <div class="card select-ticker" id="{{ symbol }}" style="min-height: 80px;">
+      <div id="tickerbox" class="col s12 m12 l4">
+         <div class="card select-ticker align-left" id="{{ symbol }}" style="min-height: 80px;">
             <div class="card-content">
                <span class="card-title pull-left">{{ symbol }}</span>
                <a id="{{ symbol }}" class="remove-ticker pull-right" style="cursor: pointer;">
@@ -47,7 +47,7 @@
       </div>
       {{/each}}
 
-      <div class="col s12 m12 l4">
+      <div id="tickerbox" class="col s12 m12 l4">
          <div class="card" style="min-height: 80px;">
             <div class="card-content">
                <p>Enter a ticker</p>

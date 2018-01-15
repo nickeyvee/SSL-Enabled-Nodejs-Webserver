@@ -24,16 +24,14 @@ function plotStock(data) {
 
    const xScale = d3.time.scale()
       .range([MARGINS.left, WIDTH - MARGINS.right])
-      .domain([new Date(data.date_left.ISO), new Date(data.date_right.ISO)]);
+      .domain([new Date(data.date_left), new Date(data.date_right)]);
 
-   // console.log([new Date(data.date_left.ISO), new Date(data.date_right.ISO)])
 
    const yScale = d3.scale
       .linear()
       .range([HEIGHT - MARGINS.top, MARGINS.bottom])
       .domain([data.price_bottom, data.price_top]);
 
-   // console.log([data.price_bottom, data.price_top]);
 
    const xAxis = d3.svg.axis()
       .scale(xScale);
@@ -64,11 +62,10 @@ function plotStock(data) {
       });
 
    vis.append('svg:path')
-      .attr('d', lineGen(data.date_arr))
+      .attr('d', lineGen(data.data_all))
       .attr('stroke', 'green')
       .attr('stroke-width', 2)
       .attr('fill', 'none');
-   console.log("shit's not broke?");
 }
 
 function resetChart() {
