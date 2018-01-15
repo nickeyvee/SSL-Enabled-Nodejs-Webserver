@@ -26233,8 +26233,6 @@ const io = require('socket.io-client');
 const helper = require('./helpers.js');
 const chart = require('./stockchart.js');
 
-'use strict';
-
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
@@ -26274,18 +26272,19 @@ function addStock() {
       },
       success: function (data) {
          console.log("Data Added");
-         console.log(data);
 
-         addTickerBox(symbol);
+         // append new HTML
+         ticker_markup(symbol);
 
-         historicalData.length = 0;
+         // reset local state
+         historicalData.splice(0, historicalData.length);
 
+         // import updated state         
          data.map(stock => {
             historicalData.push(stock);
          })
 
          chart.resetChart();
-
          chart.plotStock(
             helper.mapData(historicalData, symbol)
          )
@@ -26302,21 +26301,21 @@ function removeStock(symbol) {
       },
       success: function (data) {
          console.log("Data Deleted");
-         console.log(data);
 
          // THIS IS CAUSING PROBLEMS
 
-         $(`#${symbol}`).parent().remove();
-         $(`#${symbol}`).remove();
+         $(`div#${symbol}`).parent().remove();
+         $(`div#${symbol}`).remove();
 
+         // reset local state
          historicalData.splice(0, historicalData.length);
 
+         // import updated state
          data.map(stock => {
             historicalData.push(stock);
          })
 
          chart.resetChart();
-
          if (historicalData[0]) {
             chart.plotStock(
                helper.mapData(historicalData, historicalData[0].symbol)
@@ -26342,12 +26341,6 @@ function deleteStockEvent(target) {
    });
 }
 
-// initialize..
-addStockEvent();
-deleteStockEvent('.remove-ticker');
-
-
-// ==== CHANGE GRAPH STATE ====
 
 function toggleStockChart(symbol) {
    $(symbol).click(el => {
@@ -26359,17 +26352,23 @@ function toggleStockChart(symbol) {
    });
 }
 
-//init..
-toggleStockChart('.select-ticker');
+// initialize our events
+addStockEvent();
 
-function addTickerBox(symbol) {
-   $('#tickerbox').before(
-      `
+deleteStockEvent('.js-remove-ticker');
+
+toggleStockChart('.js-toggle-ticker');
+
+
+// ==== Vanilla.js stock ticker component ====
+
+function ticker_markup(symbol) {
+   $('.js-tickers').prepend(`
    <div class="col s12 m12 l4">
-      <div class="card select-ticker align-left" id="${symbol}" style="min-height: 80px;">
+      <div class="card js-toggle-ticker align-left" id="${symbol}" style="min-height: 80px;">
          <div class="card-content">
             <span class="card-title pull-left">${symbol}</span>
-            <a id="${symbol}" class="remove-ticker pull-right" style="cursor: pointer;">
+            <a id="${symbol}" class="js-remove-ticker pull-right" style="cursor: pointer;">
                <i class="fa fa-times" aria-hidden="true">
             </i></a>
          </div>
@@ -26377,9 +26376,12 @@ function addTickerBox(symbol) {
    </div>
    `);
 
+   /**
+    * since our HTML is brand-new we must 
+    * re-add our event listeners.
+    */
    deleteStockEvent(`a#${symbol}`);
-   toggleStockChart(`.select-ticker#${symbol}`);
-   // must re-add event
+   toggleStockChart(`div#${symbol}`);
 }
 },{"./helpers.js":45,"./stockchart.js":47,"jquery":29,"socket.io-client":34}],47:[function(require,module,exports){
 'use strict';

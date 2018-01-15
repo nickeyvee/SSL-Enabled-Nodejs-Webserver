@@ -1,5 +1,5 @@
 <style>
-   .select-ticker {
+   .js-toggle-ticker {
       cursor: pointer;
    }
 
@@ -33,13 +33,13 @@
          </div>
       </div>
    </div>
-   <div class="row">
+   <div class="tickers js-tickers row">
       {{#each data }}
-      <div id="tickerbox" class="col s12 m12 l4">
-         <div class="card select-ticker align-left" id="{{ symbol }}" style="min-height: 80px;">
+      <div class="col s12 m12 l4">
+         <div class="card js-toggle-ticker align-left" id="{{ symbol }}" style="min-height: 80px;">
             <div class="card-content">
                <span class="card-title pull-left">{{ symbol }}</span>
-               <a id="{{ symbol }}" class="remove-ticker pull-right" style="cursor: pointer;">
+               <a id="{{ symbol }}" class="js-remove-ticker pull-right" style="cursor: pointer;">
                   <i class="fa fa-times" aria-hidden="true"></i>
                </a>
             </div>
@@ -47,7 +47,7 @@
       </div>
       {{/each}}
 
-      <div id="tickerbox" class="col s12 m12 l4">
+      <div class="col s12 m12 l4">
          <div class="card" style="min-height: 80px;">
             <div class="card-content">
                <p>Enter a ticker</p>
@@ -62,4 +62,3 @@
 
 </div>
 <script src="/bundle.js" charset="utf-8"></script>
-{{!-- <script src="/javascripts/materialize.min.js" charset="utf-8"></script> --}}
