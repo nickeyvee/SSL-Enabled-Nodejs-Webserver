@@ -6,7 +6,7 @@
 var app = require('../app');
 var debug = require('debug')('nodejs-ssl:server');
 var http = require('http');
-var yahoo = require('../services/y-finance.js');
+var yahoo = require('../services/finance.js');
 var socket = require('socket.io');
 
 /**

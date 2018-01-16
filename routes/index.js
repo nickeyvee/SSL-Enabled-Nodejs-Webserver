@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 
-var yahoo = require('../services/y-finance.js');
+var yahoo = require('../services/finance.js');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -50,5 +50,23 @@ router.delete('/remove', function (req, res, next) {
       )
    )
 })
+
+router.post('/timescale', function (req, res, next) {
+      const symbol = req.body.symbol;
+      const range = req.body.range;
+      console.log(symbol, range);
+   
+      yahoo.getOneStockBySymbol(symbol, range)
+         .then(data => {
+            console.log(data);
+            yahoo.storeStocksLocally(data);
+   
+            res.json(
+               yahoo.mapStocksByDateAndPrice(
+                  yahoo.localStockData
+               )
+            );
+         })
+   });
 
 module.exports = router;

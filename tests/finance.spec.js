@@ -3,15 +3,15 @@ const util = require('util');
 const expect = require('chai').expect;
 
 
-describe('y-finance.js', function () {
-   const yahoo = require('../services/y-finance.js');
+describe('finance.js', function () {
+   const yahoo = require('../services/finance.js');
 
    it('should exist', function () {
       expect(yahoo).to.exist;
    })
 });
 
-const yahoo = require('../services/y-finance.js');
+const yahoo = require('../services/finance.js');
 const symbols = ['MSFT', 'AMZN', 'TSLA'];
 
 describe('getStocksBySymbol', function () {
@@ -66,9 +66,19 @@ describe('mapStocksByDateAndPrice', function () {
    })
 });
 
-describe('removeStock', function() {
-   it('should reflect changes', function() {
-      expect(yahoo.localStockData).to.have.lengthOf(3);      
+describe('addTimescale', function () {
+   it('should be valid', function () {
+      yahoo.addTimescale(symbols, 5)
+      .then(data => {
+            console.log(data);
+            console.log(data.length);
+      })
+   })
+})
+
+describe('removeStock', function () {
+   it('should reflect changes', function () {
+      expect(yahoo.localStockData).to.have.lengthOf(3);
       yahoo.removeStock('TSLA');
       expect(yahoo.localStockData).to.have.lengthOf(2);
    })

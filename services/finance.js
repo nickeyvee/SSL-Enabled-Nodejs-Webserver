@@ -94,14 +94,13 @@ function mapStocksByDateAndPrice(stockData) {
       throw new TypeError('only accepts an array type.');
    }
    const result = [];
-   
+
    for (let stock of localStockData) {
       const data = stock.data
          .map(data => {
             const date = new Date(data.date);
             return {
-               'ISO': data.date,
-               'date': `${date.getMonth() + 1}/${date.getDate() + 1}/${date.getFullYear()}`,
+               'date': data.date,
                'price': data.close
             }
          })
@@ -125,6 +124,21 @@ function removeStock(symbol) {
    }
 }
 
+function addTimescale(symbols, range, period) {
+
+   return getStocksBySymbol(symbols, range)
+      .then(data => {
+         const temp = [];
+         for (let company in data) {
+            if (data.hasOwnProperty(company)) {
+               temp.push(data[company]);
+            }
+         }
+         return temp;
+      });
+};
+
+
 function getSavedStockNames() {
    return localStockData;
 }
@@ -136,5 +150,6 @@ module.exports = {
    getSavedStockNames,
    mapStocksByDateAndPrice,
    localStockData,
+   addTimescale,
    removeStock
 }

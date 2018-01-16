@@ -17,7 +17,7 @@ module.exports = (function () {
 
       const data_all = stock_data.data.map(d => d);
 
-      const date_ISO = stock_data.data.map(d => d.ISO),
+      const date_ISO = stock_data.data.map(d => d.date),
          date_left = date_ISO[date_ISO.length - 1],
          date_right = date_ISO[0],
 
@@ -26,6 +26,7 @@ module.exports = (function () {
          price_bottom = Math.min.apply(Math, price_arr);
 
       return {
+         "symbol": symbol,
          "data_all": data_all,
          "date_left": date_left,
          "date_right": date_right,

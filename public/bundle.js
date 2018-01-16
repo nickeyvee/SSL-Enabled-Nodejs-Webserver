@@ -26186,6 +26186,92 @@ module.exports = yeast;
 },{}],45:[function(require,module,exports){
 'use strict';
 
+const $ = require("jquery");
+const d3 = require('d3');
+
+function plotStock(data) {
+
+      const vis = d3.select("#visualisation"),
+            WIDTH = 1150,
+            HEIGHT = 300,
+            MARGINS = {
+                  top: 20,
+                  right: 20,
+                  bottom: 20,
+                  left: 50
+            };
+
+      /**
+       * This will be our timescale.
+       What we are doing here is converting our ISO dates implicitly
+       into numbers represented in milliseconds. This will allow us
+       to actually plot plot our numbers on a graph.
+       */
+
+      const xScale = d3.time.scale()
+            .range([MARGINS.left, WIDTH - MARGINS.right])
+            .domain([new Date(data.date_left), new Date(data.date_right)]);
+
+
+      const yScale = d3.scale
+            .linear()
+            .range([HEIGHT - MARGINS.top, MARGINS.bottom])
+            .domain([data.price_bottom, data.price_top]);
+
+
+      const xAxis = d3.svg.axis()
+            .scale(xScale);
+
+      const yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+      vis.append("svg:g")
+            .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+            .call(xAxis);
+
+      vis.append("svg:g")
+            .call(yAxis);
+
+      vis.append("svg:g")
+            .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+            .call(yAxis);
+
+      // ==== APPLYING A LINE ====
+
+      var lineGen = d3.svg.line()
+            .x(d => {
+                  return xScale(new Date(d.date))
+            })
+            .y(d => {
+                  return yScale(d.price)
+            });
+
+      vis.append('svg:path')
+            .attr('d', lineGen(data.data_all))
+            .attr('stroke', 'green')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none');
+
+
+      /**
+       * Adds special data-symbol attribute for targeting purposes.
+       */
+      $(".js-time-period").attr("data-symbol", data.symbol);
+}
+
+function resetChart() {
+      d3.selectAll("path").remove();
+      d3.selectAll("g").remove();
+}
+
+module.exports = {
+      plotStock,
+      resetChart
+}
+},{"d3":10,"jquery":29}],46:[function(require,module,exports){
+'use strict';
+
 module.exports = (function () {
 
    /**
@@ -26203,7 +26289,7 @@ module.exports = (function () {
 
       const data_all = stock_data.data.map(d => d);
 
-      const date_ISO = stock_data.data.map(d => d.ISO),
+      const date_ISO = stock_data.data.map(d => d.date),
          date_left = date_ISO[date_ISO.length - 1],
          date_right = date_ISO[0],
 
@@ -26212,6 +26298,7 @@ module.exports = (function () {
          price_bottom = Math.min.apply(Math, price_arr);
 
       return {
+         "symbol": symbol,
          "data_all": data_all,
          "date_left": date_left,
          "date_right": date_right,
@@ -26225,19 +26312,17 @@ module.exports = (function () {
       "mapData": getDataByTickerName
    }
 }());
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 
 const $ = require("jquery");
 const io = require('socket.io-client');
 const helper = require('./helpers.js');
-const chart = require('./stockchart.js');
+const chart = require('./chart.js');
 
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
-
-//console.log('bundle.js works');
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
@@ -26262,8 +26347,7 @@ $.ajax({
 
 // ==== REQUESTS ====
 
-function addStock() {
-   const symbol = $('#ticker_symbol').val();
+function addStock(symbol) {
    $.ajax({
       url: '/add',
       method: 'POST',
@@ -26272,9 +26356,6 @@ function addStock() {
       },
       success: function (data) {
          console.log("Data Added");
-
-         // append new HTML
-         ticker_markup(symbol);
 
          // reset local state
          historicalData.splice(0, historicalData.length);
@@ -26302,10 +26383,10 @@ function removeStock(symbol) {
       success: function (data) {
          console.log("Data Deleted");
 
-         // THIS IS CAUSING PROBLEMS
+         const local = historicalData.map(d => d.symbol);
 
-         $(`div#${symbol}`).parent().remove();
-         $(`div#${symbol}`).remove();
+         console.log(local);
+         console.log(historicalData);
 
          // reset local state
          historicalData.splice(0, historicalData.length);
@@ -26325,19 +26406,61 @@ function removeStock(symbol) {
    });
 }
 
+
+function changeTimescale(symbol, range) {
+   $.ajax({
+      url: '/timescale',
+      method: 'POST',
+      data: {
+         'symbol': symbol,
+         'range': range
+      },
+      success: function (data) {
+         console.log("Data Added");
+         console.log(data);
+
+         // reset local state
+         historicalData.splice(0, historicalData.length);
+
+         // import updated state         
+         data.map(stock => {
+            historicalData.push(stock);
+         })
+
+         chart.resetChart();
+         chart.plotStock(
+            helper.mapData(historicalData, symbol)
+         )
+      },
+      error: function(err) {
+         console.log(err.status);
+         console.log(err.statusText);         
+      }
+   });
+}
+
+
 // ==== USER EVENT REGISTRATION ====
 
-function addStockEvent() {
-   $('.add-stock').click(el => {
-      console.log('added stock');
-      addStock();
+function addStockEvent(target) {
+   $(target).click(el => {
+      const symbol = $('#ticker_symbol').val();
+      // append new HTML
+      ticker_markup(symbol);
+
+      addStock(symbol);
    })
 }
 
 
 function deleteStockEvent(target) {
    $(target).click(el => {
-      removeStock(el.currentTarget.id);
+      const symbol = el.currentTarget.id;
+      
+      $(`div#${symbol}`).parent().remove();
+      $(`div#${symbol}`).remove();
+
+      removeStock(symbol);
    });
 }
 
@@ -26352,12 +26475,29 @@ function toggleStockChart(symbol) {
    });
 }
 
+function changeTimescaleEvent() {
+   $('.js-time-period').click(el => {
+      const months = el.currentTarget.getAttribute('value');
+      const symbol = el.currentTarget.getAttribute('data-symbol');
+
+      console.log( months, symbol);
+
+      changeTimescale(symbol, months);
+
+      // socket.emit('timechange', {
+      //    "timePeriod": months
+      // })
+   })
+}
+
 // initialize our events
-addStockEvent();
+addStockEvent('.add-stock');
 
 deleteStockEvent('.js-remove-ticker');
 
 toggleStockChart('.js-toggle-ticker');
+
+changeTimescaleEvent();
 
 
 // ==== Vanilla.js stock ticker component ====
@@ -26383,84 +26523,4 @@ function ticker_markup(symbol) {
    deleteStockEvent(`a#${symbol}`);
    toggleStockChart(`div#${symbol}`);
 }
-},{"./helpers.js":45,"./stockchart.js":47,"jquery":29,"socket.io-client":34}],47:[function(require,module,exports){
-'use strict';
-
-const $ = require("jquery");
-const d3 = require('d3');
-
-function plotStock(data) {
-
-   const vis = d3.select("#visualisation"),
-      WIDTH = 1150,
-      HEIGHT = 300,
-      MARGINS = {
-         top: 20,
-         right: 20,
-         bottom: 20,
-         left: 50
-      };
-
-   /**
-    * This will be our timescale.
-    What we are doing here is converting our ISO dates implicitly
-    into numbers represented in milliseconds. This will allow us
-    to actually plot plot our numbers on a graph.
-    */
-
-   const xScale = d3.time.scale()
-      .range([MARGINS.left, WIDTH - MARGINS.right])
-      .domain([new Date(data.date_left), new Date(data.date_right)]);
-
-
-   const yScale = d3.scale
-      .linear()
-      .range([HEIGHT - MARGINS.top, MARGINS.bottom])
-      .domain([data.price_bottom, data.price_top]);
-
-
-   const xAxis = d3.svg.axis()
-      .scale(xScale);
-
-   const yAxis = d3.svg.axis()
-      .scale(yScale)
-      .orient("left");
-
-   vis.append("svg:g")
-      .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
-      .call(xAxis);
-
-   vis.append("svg:g")
-      .call(yAxis);
-
-   vis.append("svg:g")
-      .attr("transform", "translate(" + (MARGINS.left) + ",0)")
-      .call(yAxis);
-
-   // ==== APPLYING A LINE ====
-
-   var lineGen = d3.svg.line()
-      .x(d => {
-         return xScale(new Date(d.ISO))
-      })
-      .y(d => {
-         return yScale(d.price)
-      });
-
-   vis.append('svg:path')
-      .attr('d', lineGen(data.data_all))
-      .attr('stroke', 'green')
-      .attr('stroke-width', 2)
-      .attr('fill', 'none');
-}
-
-function resetChart() {
-   d3.selectAll("path").remove();
-   d3.selectAll("g").remove();
-}
-
-module.exports = {
-   plotStock,
-   resetChart
-}
-},{"d3":10,"jquery":29}]},{},[46]);
+},{"./chart.js":45,"./helpers.js":46,"jquery":29,"socket.io-client":34}]},{},[47]);
