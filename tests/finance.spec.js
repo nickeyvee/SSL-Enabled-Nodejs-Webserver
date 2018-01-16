@@ -30,6 +30,7 @@ describe('getStocksBySymbol', function () {
 describe('getOneStockBySymbol', function () {
    it('should return something', function () {
       return yahoo.getOneStockBySymbol('AMZN').then(data => {
+				console.log(data);
          expect(data).to.exist;
          expect(data).to.be.an('array');
          expect(data[0]).to.be.an('object');
@@ -44,37 +45,14 @@ describe('storeStocksLocally', function () {
          yahoo.storeStocksLocally(data);
          expect(yahoo.localStockData).to.not.be.undefined;
          expect(yahoo.localStockData).to.have.lengthOf(3);
-         expect(yahoo.localStockData[0]).to.be.an('object');
-         expect(yahoo.localStockData[0].data).to.be.an('array');
-         expect(yahoo.localStockData[0].symbol).to.be.a('string');
+         expect(yahoo.localStockData[0]).to.be.an('array');
+         expect(yahoo.localStockData[0][0]).to.be.an('object');
+				 expect(yahoo.localStockData[0][0].symbol).to.be.a('string');
+         expect(yahoo.localStockData[0][0].close).to.be.a('number');				 
       })
    })
 });
 
-describe('mapStocksByDateAndPrice', function () {
-   it('it should return list of stocks in proper format\n', function () {
-      const mappedData = yahoo.mapStocksByDateAndPrice(yahoo.localStockData);
-
-      expect(yahoo.localStockData).to.have.a.lengthOf(3);
-
-      expect(mappedData).to.not.be.undefined;
-      expect(mappedData).to.have.a.lengthOf(3);
-      expect(mappedData[0].data).to.be.an('array');
-      expect(mappedData[0].data[0]).to.be.an('object');
-      expect(mappedData[0].data[0].date).to.exist;
-      expect(mappedData[0].data[0].price).to.exist;
-   })
-});
-
-describe('addTimescale', function () {
-   it('should be valid', function () {
-      yahoo.addTimescale(symbols, 5)
-      .then(data => {
-            console.log(data);
-            console.log(data.length);
-      })
-   })
-})
 
 describe('removeStock', function () {
    it('should reflect changes', function () {

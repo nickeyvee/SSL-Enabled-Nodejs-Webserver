@@ -62,7 +62,7 @@ function plotStock(data) {
             });
 
       vis.append('svg:path')
-            .attr('d', lineGen(data.data_all))
+            .attr('d', lineGen(data.date_vs_time))
             .attr('stroke', 'green')
             .attr('stroke-width', 2)
             .attr('fill', 'none');

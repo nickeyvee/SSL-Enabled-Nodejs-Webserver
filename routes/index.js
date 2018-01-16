@@ -6,67 +6,59 @@ var yahoo = require('../services/finance.js');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
+	console.log(yahoo.getSavedStockNames());
 
-   res.render('index', {
-      title: 'Express + D3',
-      data: yahoo.getSavedStockNames()
-   });
+	res.render('index', {
+		title: 'Express + D3',
+		data: yahoo.getSavedStockNames()
+	});
 });
 
 router.get('/stocks', function (req, res, next) {
-   const mappedData = yahoo.mapStocksByDateAndPrice(yahoo.localStockData);
 
-   // PRODUCE A JSON DOC FOR TESTS.
-   // const json = JSON.stringify(mappedData);
-   // fs.writeFile('./tests/mocks/mockfile.json', json, 'utf8');
+	// PRODUCE A JSON DOC FOR TESTS.
+	// const json = JSON.stringify(yahoo.localStockData);
+	// fs.writeFile('./tests/mocks/mockfile.json', json, 'utf8');
 
-   res.json(mappedData);
+	res.json(yahoo.localStockData);
 });
 
 router.post('/add', function (req, res, next) {
-   const symbol = req.body.symbol;
-   // console.log(symbol);
+	const symbol = req.body.symbol;
+	const range = req.body.range;	
+	// console.log(symbol);
 
-   yahoo.getOneStockBySymbol(symbol)
-      .then(data => {
-         yahoo.storeStocksLocally(data);
+	yahoo.getOneStockBySymbol(symbol, range)
+		.then(data => {
+			yahoo.storeStocksLocally(data);
 
-         res.json(
-            yahoo.mapStocksByDateAndPrice(
-               yahoo.localStockData
-            )
-         );
-      })
+			res.json(yahoo.localStockData);
+		})
 });
 
 router.delete('/remove', function (req, res, next) {
-   const symbol = req.body.symbol;
-   // console.log(symbol);
-   yahoo.removeStock(symbol)
+	const symbol = req.body.symbol;
+	// console.log(symbol);
+	yahoo.removeStock(symbol)
 
-   res.json(
-      yahoo.mapStocksByDateAndPrice(
-         yahoo.localStockData
-      )
-   )
+	res.json(yahoo.localStockData);
 })
 
 router.post('/timescale', function (req, res, next) {
-      const symbol = req.body.symbol;
-      const range = req.body.range;
-      console.log(symbol, range);
-   
-      yahoo.getOneStockBySymbol(symbol, range)
-         .then(data => {
-            console.log(data);
-            yahoo.storeStocksLocally(data);
-   
-            res.json(
-               yahoo.mapStocksByDateAndPrice(
-                  yahoo.localStockData
-               )
-            );
-         })
-   });
+	const symbol = req.body.symbol;
+	const range = req.body.range;
+
+	const stockNames = yahoo.getSavedStockNames()
+		.map(d => d.symbol);
+		console.log(stockNames)
+
+	yahoo.removeAll();
+
+	yahoo.getStocksBySymbol(stockNames, range)
+		.then(data => {
+			yahoo.storeStocksLocally(data);
+			res.json(yahoo.localStockData);
+		})
+});
 
 module.exports = router;

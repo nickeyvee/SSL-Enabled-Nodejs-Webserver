@@ -27,7 +27,7 @@ var server = http.createServer(app);
  * Provide default stock ticker info on server start.
  */
 
-yahoo.getStocksBySymbol(['MSFT', 'AMZN', 'TSLA'])
+yahoo.getStocksBySymbol(['TSLA', 'MSFT', 'AMZN'])
    .then(data => {
       yahoo.storeStocksLocally(data);
       server.listen(port);

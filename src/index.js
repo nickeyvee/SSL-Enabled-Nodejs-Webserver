@@ -8,6 +8,7 @@ const chart = require('./chart.js');
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
 const historicalData = [];
+let timescale = 12;
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
@@ -17,162 +18,176 @@ const historicalData = [];
 // get stock data into our app immediately..
 
 $.ajax({
-   url: '/stocks',
-   method: 'GET'
+	url: '/stocks',
+	method: 'GET'
 }).then(function (data) {
-   // store in client.
-   data.map(stock => {
-      historicalData.push(stock);
-   })
-   // plots ONE stock on init.
-   chart.plotStock(
-      helper.mapData(historicalData, historicalData[0].symbol)
-   )
+	// store in client.
+	data.map(stock => {
+		historicalData.push(stock);
+	})
+	//  plots ONE stock on init.
+	chart.plotStock(
+		helper.mapData(historicalData, historicalData[0][0].symbol)
+	)
 });
 
 // ==== REQUESTS ====
 
-function addStock(symbol) {
-   $.ajax({
-      url: '/add',
-      method: 'POST',
-      data: {
-         'symbol': symbol
-      },
-      success: function (data) {
-         console.log("Data Added");
+function addStock(symbol, range) {
+	console.log(range);
+	$.ajax({
+		url: '/add',
+		method: 'POST',
+		data: {
+			'symbol': symbol,
+			'range': range
+		},
+		success: function (data) {
+			console.log("Data Added");
 
-         // reset local state
-         historicalData.splice(0, historicalData.length);
+			// reset local state
+			historicalData.splice(0, historicalData.length);
 
-         // import updated state         
-         data.map(stock => {
-            historicalData.push(stock);
-         })
+			// import updated state         
+			data.map(stock => {
+				historicalData.push(stock);
+			})
 
-         chart.resetChart();
-         chart.plotStock(
-            helper.mapData(historicalData, symbol)
-         )
-      }
-   });
+			chart.resetChart();
+			chart.plotStock(
+				helper.mapData(historicalData, symbol)
+			)
+		}
+	});
 }
 
 function removeStock(symbol) {
-   $.ajax({
-      type: "DELETE",
-      url: '/remove',
-      data: {
-         'symbol': symbol
-      },
-      success: function (data) {
-         console.log("Data Deleted");
+	$.ajax({
+		type: "DELETE",
+		url: '/remove',
+		data: {
+			'symbol': symbol
+		},
+		success: function (data) {
+			console.log("Data Deleted");
 
-         const local = historicalData.map(d => d.symbol);
+			// reset local state
+			historicalData.splice(0, historicalData.length);
 
-         console.log(local);
-         console.log(historicalData);
+			// import updated state
+			data.map(stock => {
+				historicalData.push(stock);
+			})
 
-         // reset local state
-         historicalData.splice(0, historicalData.length);
-
-         // import updated state
-         data.map(stock => {
-            historicalData.push(stock);
-         })
-
-         chart.resetChart();
-         if (historicalData[0]) {
-            chart.plotStock(
-               helper.mapData(historicalData, historicalData[0].symbol)
-            )
-         }
-      }
-   });
+			chart.resetChart();
+			if (historicalData[0]) {
+				chart.plotStock(
+					helper.mapData(historicalData, historicalData[0][0].symbol)
+				)
+			}
+		}
+	});
 }
 
 
 function changeTimescale(symbol, range) {
-   $.ajax({
-      url: '/timescale',
-      method: 'POST',
-      data: {
-         'symbol': symbol,
-         'range': range
-      },
-      success: function (data) {
-         console.log("Data Added");
-         console.log(data);
+	console.log(range);
+	$.ajax({
+		url: '/timescale',
+		method: 'POST',
+		data: {
+			'symbol': symbol,
+			'range': range
+		},
+		success: function (data) {
+			console.log("Data Added");
 
-         // reset local state
-         historicalData.splice(0, historicalData.length);
+			// reset local state
+			historicalData.splice(0, historicalData.length);
 
-         // import updated state         
-         data.map(stock => {
-            historicalData.push(stock);
-         })
+			// import updated state         
+			data.map(stock => {
+				historicalData.push(stock);
+			})
 
-         chart.resetChart();
-         chart.plotStock(
-            helper.mapData(historicalData, symbol)
-         )
-      },
-      error: function(err) {
-         console.log(err.status);
-         console.log(err.statusText);         
-      }
-   });
+			chart.resetChart();
+			chart.plotStock(
+				helper.mapData(historicalData, symbol)
+			)
+		},
+		error: function (err) {
+			console.log(err.status);
+			console.log(err.statusText);
+		}
+	});
 }
 
 
 // ==== USER EVENT REGISTRATION ====
 
 function addStockEvent(target) {
-   $(target).click(el => {
-      const symbol = $('#ticker_symbol').val();
-      // append new HTML
-      ticker_markup(symbol);
+	$(target).click(el => {
+		let symbol = $('#ticker_symbol').val();
+		// append new HTML
+		const exists = historicalData.find(stock => stock[0].symbol === symbol);
 
-      addStock(symbol);
-   })
+		const re = /^[a-zA-Z]+$/;
+
+		if (!re.test(symbol)) {
+			console.log('String is invalid');
+			return;
+		} else if(symbol.length > 4) {
+			console.log('String is invalid');
+			return;
+		}
+
+		symbol = symbol.toUpperCase();
+
+		if (exists) {
+			console.log('already added');
+			return;
+		}
+
+		ticker_markup(symbol);
+
+		addStock(symbol, timescale);
+	})
 }
 
 
 function deleteStockEvent(target) {
-   $(target).click(el => {
-      const symbol = el.currentTarget.id;
-      
-      $(`div#${symbol}`).parent().remove();
-      $(`div#${symbol}`).remove();
+	$(target).click(el => {
+		const symbol = el.currentTarget.id;
 
-      removeStock(symbol);
-   });
+		$(`div#${symbol}`).parent().remove();
+		$(`div#${symbol}`).remove();
+
+		removeStock(symbol);
+	});
 }
 
 
 function toggleStockChart(symbol) {
-   $(symbol).click(el => {
-      const symbol = el.currentTarget.id;
-      chart.resetChart();
-      chart.plotStock(
-         helper.mapData(historicalData, symbol)
-      );
-   });
+	$(symbol).click(el => {
+		const symbol = el.currentTarget.id;
+		chart.resetChart();
+		chart.plotStock(
+			helper.mapData(historicalData, symbol)
+		);
+	});
 }
 
 function changeTimescaleEvent() {
-   $('.js-time-period').click(el => {
-      const months = el.currentTarget.getAttribute('value');
-      const symbol = el.currentTarget.getAttribute('data-symbol');
+	$('.js-time-period').click(el => {
+		const months = el.currentTarget.getAttribute('value');
+		const symbol = el.currentTarget.getAttribute('data-symbol');
 
-      console.log( months, symbol);
+		timescale = months;
 
-      changeTimescale(symbol, months);
+		chart.resetChart();
+		changeTimescale(symbol, months);
 
-      // socket.emit('timechange', {
-      //    "timePeriod": months
-      // })
-   })
+	})
 }
 
 // initialize our events
@@ -188,7 +203,7 @@ changeTimescaleEvent();
 // ==== Vanilla.js stock ticker component ====
 
 function ticker_markup(symbol) {
-   $('.js-tickers').prepend(`
+	$('.js-tickers').prepend(`
    <div class="col s12 m12 l4">
       <div class="card js-toggle-ticker align-left" id="${symbol}" style="min-height: 80px;">
          <div class="card-content">
@@ -201,10 +216,10 @@ function ticker_markup(symbol) {
    </div>
    `);
 
-   /**
-    * since our HTML is brand-new we must 
-    * re-add our event listeners.
-    */
-   deleteStockEvent(`a#${symbol}`);
-   toggleStockChart(`div#${symbol}`);
+	/**
+	 * since our HTML is brand-new we must 
+	 * re-add our event listeners.
+	 */
+	deleteStockEvent(`a#${symbol}`);
+	toggleStockChart(`div#${symbol}`);
 }

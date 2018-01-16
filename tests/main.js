@@ -5,9 +5,9 @@ const expect = require('chai').expect;
 // https://stackoverflow.com/questions/24153261/joining-tests-from-multiple-files-with-mocha-js
 
 function importTest(name, path) {
-   describe(name, function () {
-      require(path);
-   });
+	describe(name, function () {
+		require(path);
+	});
 }
 
 // a file that deoPn't exist..yet.
@@ -17,15 +17,15 @@ function importTest(name, path) {
 // var common = require("./common");
 
 describe("test entry point (main.js)\n", function () {
-   beforeEach(function () {
-      // console.log("running something before each test");
-   });
+	beforeEach(function () {
+		// console.log("running something before each test");
+	});
 
-   // importTest("Alphavantage data service\n", './stockinfo.spec.js');
-   importTest("Yahoo Finance Service\n", './finance.spec.js');
-   // importTest("Client-side Helper Functions\n", './helpers.spec.js');   
+	// importTest("Alphavantage data service\n", './stockinfo.spec.js');
+	importTest("Yahoo Finance Service\n", './finance.spec.js');
+	importTest("Client-side Helper Functions\n", './helpers.spec.js');
 
-   after(function () {
-      //  process.exit();
-   });
+	after(function () {
+		//  process.exit();
+	});
 });
