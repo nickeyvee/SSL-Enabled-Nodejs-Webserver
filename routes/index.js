@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
 	console.log(yahoo.getSavedStockNames());
 
 	res.render('index', {
-		title: 'Express + D3',
+		title: 'Express + C3',
 		data: yahoo.getSavedStockNames()
 	});
 });

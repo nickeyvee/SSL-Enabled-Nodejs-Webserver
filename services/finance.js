@@ -27,7 +27,7 @@ function getStocksBySymbol(symbols, range, period) {
 		today.setMonth(today.getMonth() - range);
 	}
 
-	if(range == 60) period = 'w';
+	if(range == 60) period = 'm';
 
 	const date_range = today.toISOString().substring(0, 10);
 

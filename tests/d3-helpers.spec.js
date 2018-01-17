@@ -5,14 +5,14 @@ const expect = require('chai').expect;
 
 
 describe('helpers.js', function () {
-   const helper = require('../src/helpers.js');
+   const helper = require('../src/d3-helpers.js');
 
    it('should exist', function () {
       expect(helper).to.exist;
    })
 });
 
-const helper = require('../src/helpers.js');
+const helper = require('../src/d3-helpers.js');
 
 // JSON object for unit tests.
 let mock;

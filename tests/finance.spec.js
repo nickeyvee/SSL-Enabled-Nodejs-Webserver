@@ -16,7 +16,7 @@ const symbols = ['MSFT', 'AMZN', 'TSLA'];
 
 describe('getStocksBySymbol', function () {
 	it('should return something', function () {
-		this.timeout(3500);
+		this.timeout(10000);
 		return yahoo.getStocksBySymbol(symbols).then(data => {
 			expect(data).to.exist;
 			expect(data).to.be.an('object');
@@ -29,7 +29,7 @@ describe('getStocksBySymbol', function () {
 
 describe('getOneStockBySymbol', function () {
 	it('should return something', function () {
-		this.timeout(3500);
+		this.timeout(10000);		
 		return yahoo.getOneStockBySymbol('AMZN').then(data => {
 			expect(data).to.exist;
 			expect(data).to.be.an('array');

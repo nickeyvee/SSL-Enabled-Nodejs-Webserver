@@ -2,13 +2,17 @@
 
 const $ = require("jquery");
 const io = require('socket.io-client');
-const helper = require('./helpers.js');
-const chart = require('./d3-chart.js');
+const helper = require('./d3-helpers.js');
+// const chart = require('./d3-chart.js');
+const c3_chart = require('./c3-chart.js');
+const c3_helpers = require('./c3-helpers.js')
 
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
-const historicalData = [];
+const localData = [];
+
 let timescale = 12;
+let symbol_state = '';
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
@@ -23,12 +27,15 @@ $.ajax({
 }).then(function (data) {
 	// store in client.
 	data.map(stock => {
-		historicalData.push(stock);
+		localData.push(stock);
 	})
 	//  plots ONE stock on init.
-	chart.plotStock(
-		helper.mapData(historicalData, historicalData[0][0].symbol)
-	)
+	symbol_state = localData[0][0].symbol;
+
+	const d = c3_helpers.mapData(localData, localData[0][0].symbol);
+
+	c3_chart(d.dates, d.prices);
+
 });
 
 // ==== REQUESTS ====
@@ -46,17 +53,15 @@ function addStock(symbol, range) {
 			console.log("Data Added");
 
 			// reset local state
-			historicalData.splice(0, historicalData.length);
+			localData.splice(0, localData.length);
 
 			// import updated state         
 			data.map(stock => {
-				historicalData.push(stock);
+				localData.push(stock);
 			})
+			const d = c3_helpers.mapData(localData, symbol);
 
-			chart.resetChart();
-			chart.plotStock(
-				helper.mapData(historicalData, symbol)
-			)
+			c3_chart(d.dates, d.prices);
 		}
 	});
 }
@@ -72,18 +77,20 @@ function removeStock(symbol) {
 			console.log("Data Deleted");
 
 			// reset local state
-			historicalData.splice(0, historicalData.length);
+			localData.splice(0, localData.length);
 
 			// import updated state
 			data.map(stock => {
-				historicalData.push(stock);
+				localData.push(stock);
 			})
 
-			chart.resetChart();
-			if (historicalData[0]) {
-				chart.plotStock(
-					helper.mapData(historicalData, historicalData[0][0].symbol)
-				)
+			// chart.resetChart();
+			if (localData[0]) {
+				// chart.d3_chart(
+				// 	helper.mapData(localData, localData[0][0].symbol)
+				// )
+				const d = c3_helpers.mapData(localData, localData[0][0].symbol);
+				c3_chart(d.dates, d.prices);
 			}
 		}
 	});
@@ -101,19 +108,19 @@ function changeTimescale(symbol, range) {
 		},
 		success: function (data) {
 			console.log("Data Added");
+			console.log(data, symbol);
 
 			// reset local state
-			historicalData.splice(0, historicalData.length);
+			localData.splice(0, localData.length);
 
 			// import updated state         
 			data.map(stock => {
-				historicalData.push(stock);
+				localData.push(stock);
 			})
 
-			chart.resetChart();
-			chart.plotStock(
-				helper.mapData(historicalData, symbol)
-			)
+			const d = c3_helpers.mapData(localData, symbol);
+
+			c3_chart(d.dates, d.prices);
 		},
 		error: function (err) {
 			console.log(err.status);
@@ -129,14 +136,14 @@ function addStockEvent(target) {
 	$(target).click(el => {
 		const symbol = $('#ticker_symbol').val().toUpperCase();
 		// append new HTML
-		const exists = historicalData.find(stock => stock[0].symbol === symbol);
+		const exists = localData.find(stock => stock[0].symbol === symbol);
 
 		const re = /^[A-Z]+$/;
 
 		if (!re.test(symbol)) {
 			console.log('String is invalid');
 			return;
-		} else if(symbol.length > 4) {
+		} else if (symbol.length > 4) {
 			console.log('String is invalid');
 			return;
 		}
@@ -167,23 +174,24 @@ function deleteStockEvent(target) {
 
 function toggleStockChart(symbol) {
 	$(symbol).click(el => {
+
 		const symbol = el.currentTarget.id;
-		chart.resetChart();
-		chart.plotStock(
-			helper.mapData(historicalData, symbol)
-		);
+
+		symbol_state = symbol;
+
+		const d = c3_helpers.mapData(localData, symbol);
+
+		c3_chart(d.dates, d.prices);
 	});
 }
 
 function changeTimescaleEvent() {
 	$('.js-time-period').click(el => {
 		const months = el.currentTarget.getAttribute('value');
-		const symbol = el.currentTarget.getAttribute('data-symbol');
 
 		timescale = months;
 
-		chart.resetChart();
-		changeTimescale(symbol, months);
+		changeTimescale(symbol_state, months);
 
 	})
 }

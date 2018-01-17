@@ -22,7 +22,8 @@ describe("test entry point (main.js)\n", function () {
 	});
 
 	importTest("Yahoo Finance Service\n", './finance.spec.js');
-	importTest("Client-side Helper Functions\n", './helpers.spec.js');
+	importTest("Client-side Helper Functions (D3)\n", './d3-helpers.spec.js');
+	importTest("Client-side Helper Functions (C3)\n", './c3-helpers.spec.js');
 
 	after(function () {
 		//  process.exit();

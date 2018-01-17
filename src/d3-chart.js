@@ -3,7 +3,7 @@
 const $ = require("jquery");
 const d3 = require('d3');
 
-function plotStock(data) {
+function d3_chart(data) {
 
       const vis = d3.select("#visualisation"),
             WIDTH = 1150,
@@ -80,6 +80,6 @@ function resetChart() {
 }
 
 module.exports = {
-      plotStock,
+      d3_chart,
       resetChart
 }
