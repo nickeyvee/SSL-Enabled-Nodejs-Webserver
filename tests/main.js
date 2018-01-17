@@ -10,7 +10,7 @@ function importTest(name, path) {
 	});
 }
 
-// a file that deoPn't exist..yet.
+// a file that doesn't exist..yet.
 // This is where you can put common modules
 // that are used in your tests :
 
@@ -21,7 +21,6 @@ describe("test entry point (main.js)\n", function () {
 		// console.log("running something before each test");
 	});
 
-	// importTest("Alphavantage data service\n", './stockinfo.spec.js');
 	importTest("Yahoo Finance Service\n", './finance.spec.js');
 	importTest("Client-side Helper Functions\n", './helpers.spec.js');
 

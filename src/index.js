@@ -3,7 +3,7 @@
 const $ = require("jquery");
 const io = require('socket.io-client');
 const helper = require('./helpers.js');
-const chart = require('./chart.js');
+const chart = require('./d3-chart.js');
 
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
@@ -127,11 +127,11 @@ function changeTimescale(symbol, range) {
 
 function addStockEvent(target) {
 	$(target).click(el => {
-		let symbol = $('#ticker_symbol').val();
+		const symbol = $('#ticker_symbol').val().toUpperCase();
 		// append new HTML
 		const exists = historicalData.find(stock => stock[0].symbol === symbol);
 
-		const re = /^[a-zA-Z]+$/;
+		const re = /^[A-Z]+$/;
 
 		if (!re.test(symbol)) {
 			console.log('String is invalid');
@@ -140,8 +140,6 @@ function addStockEvent(target) {
 			console.log('String is invalid');
 			return;
 		}
-
-		symbol = symbol.toUpperCase();
 
 		if (exists) {
 			console.log('already added');

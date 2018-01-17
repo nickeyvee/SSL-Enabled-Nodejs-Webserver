@@ -26302,8 +26302,6 @@ module.exports = (function () {
          price_arr = stock_data.map(stock => stock.close),
          price_top = Math.max.apply(Math, price_arr),
 				 price_bottom = Math.min.apply(Math, price_arr);
-				 
-				 console.log(date_left, date_right);
 
       return {
          "symbol": symbol,
@@ -26326,7 +26324,7 @@ module.exports = (function () {
 const $ = require("jquery");
 const io = require('socket.io-client');
 const helper = require('./helpers.js');
-const chart = require('./chart.js');
+const chart = require('./d3-chart.js');
 
 // make connection with websockets
 const socket = io.connect("http://localhost:5000");
@@ -26450,11 +26448,11 @@ function changeTimescale(symbol, range) {
 
 function addStockEvent(target) {
 	$(target).click(el => {
-		let symbol = $('#ticker_symbol').val();
+		const symbol = $('#ticker_symbol').val().toUpperCase();
 		// append new HTML
 		const exists = historicalData.find(stock => stock[0].symbol === symbol);
 
-		const re = /^[a-zA-Z]+$/;
+		const re = /^[A-Z]+$/;
 
 		if (!re.test(symbol)) {
 			console.log('String is invalid');
@@ -26463,8 +26461,6 @@ function addStockEvent(target) {
 			console.log('String is invalid');
 			return;
 		}
-
-		symbol = symbol.toUpperCase();
 
 		if (exists) {
 			console.log('already added');
@@ -26546,4 +26542,4 @@ function ticker_markup(symbol) {
 	deleteStockEvent(`a#${symbol}`);
 	toggleStockChart(`div#${symbol}`);
 }
-},{"./chart.js":45,"./helpers.js":46,"jquery":29,"socket.io-client":34}]},{},[47]);
+},{"./d3-chart.js":45,"./helpers.js":46,"jquery":29,"socket.io-client":34}]},{},[47]);

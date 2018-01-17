@@ -46,11 +46,9 @@ describe('mapData', function() {
       const date_right = new Date(stockData.date_right);
 
       expect(stockData).to.be.an('object');
-      expect(stockData.data_all).to.be.an('array');
+      expect(stockData.date_vs_time).to.be.an('array');
 
-      expect(date_left.getFullYear()).to.equal(2017);
-      // expect(date_left.getMonth()).to.equal(9);   
-      
+      expect(date_left.getFullYear()).to.equal(2017); 
       expect(date_right.getFullYear()).to.equal(2018);
       expect(date_right.getDate()).to.equal(12);
       expect(date_right.getMonth()).to.equal(0);

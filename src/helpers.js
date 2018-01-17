@@ -30,8 +30,6 @@ module.exports = (function () {
          price_arr = stock_data.map(stock => stock.close),
          price_top = Math.max.apply(Math, price_arr),
 				 price_bottom = Math.min.apply(Math, price_arr);
-				 
-				 console.log(date_left, date_right);
 
       return {
          "symbol": symbol,

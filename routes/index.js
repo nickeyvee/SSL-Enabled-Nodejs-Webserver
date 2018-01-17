@@ -18,7 +18,7 @@ router.get('/stocks', function (req, res, next) {
 
 	// PRODUCE A JSON DOC FOR TESTS.
 	// const json = JSON.stringify(yahoo.localStockData);
-	// fs.writeFile('./tests/mocks/mockfile.json', json, 'utf8');
+	// fs.writeFile('./tests/mocks/mockfile-12-month.json', json, 'utf8');
 
 	res.json(yahoo.localStockData);
 });
@@ -26,7 +26,6 @@ router.get('/stocks', function (req, res, next) {
 router.post('/add', function (req, res, next) {
 	const symbol = req.body.symbol;
 	const range = req.body.range;	
-	// console.log(symbol);
 
 	yahoo.getOneStockBySymbol(symbol, range)
 		.then(data => {
@@ -38,7 +37,6 @@ router.post('/add', function (req, res, next) {
 
 router.delete('/remove', function (req, res, next) {
 	const symbol = req.body.symbol;
-	// console.log(symbol);
 	yahoo.removeStock(symbol)
 
 	res.json(yahoo.localStockData);
