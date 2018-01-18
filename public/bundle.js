@@ -35429,7 +35429,27 @@ const d3 = require('d3');
 const c3 = require('c3');
 
 
-function c3_chart(dates, prices) {
+function c3_chart(dates, prices, range) {
+
+	const months = [
+		'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+	];
+	// console.log('\n');
+	// console.log('c3_chart() [function]');
+	// console.log('Dates : ');
+	// console.log(dates);
+	// console.log('Prices : ');
+	// console.log(prices);
+
+	let y_count = 7,
+		date_format = '%Y-%m-%d';
+
+	if (range == 60) {
+		y_count = 6;
+		date_format = '%Y';
+	} else if (range == 1) {
+		date_format = '%m %d';
+	}
 
 	var chart = c3.generate({
 		data: {
@@ -35443,8 +35463,8 @@ function c3_chart(dates, prices) {
 			x: {
 				type: 'timeseries',
 				tick: {
-					format: '%Y-%m-%d',
-					count: 7,
+					format: date_format,
+					count: y_count,
 					culling: 6
 				},
 				show: true
@@ -35453,7 +35473,7 @@ function c3_chart(dates, prices) {
 				tick: {
 					format: d3.format("$,")
 				},
-				min: Math.min.apply(Math, prices.slice(1, prices.length)) - 10,
+				min: Math.min.apply(Math, prices.slice(1, prices.length)),
 			}
 		},
 		point: {
@@ -35481,7 +35501,14 @@ function dates(data) {
 }
 
 function prices(data, symbol) {
-	const prices = data.map(d => d.close.toFixed(2));
+
+	// console.log('\n');
+	// console.log('Prices() [function]\n');
+	// console.log('first index: ');
+	// console.log(data[0]);
+	// console.log('symbol : ' + symbol + '\n');
+
+	const prices = data.map((d, i) => d.close.toFixed(2));
 	prices.unshift(symbol);
 	return prices;
 }
@@ -35499,65 +35526,8 @@ module.exports = {
 },{}],48:[function(require,module,exports){
 'use strict';
 
-/**
- * We need to do two things here:
- * 
- * 1) return the stock we are looking for
- * 2) process it's data and return it
- * 
- * findStock() will search the stock data that we need.
- * We can then pass that data to be procced by mapped() which 
- * will return our the data in a consumable 
- * format for the D3.js API.
- * 
- */
-
-function findStock(data, symbol) {
-	return data.find(stock => stock[0].symbol === symbol);
-}
-
-function mapped(data, symbol) {
-
-	const date_vs_time = data.map(d => {
-		return {
-			"price": d.close,
-			"date": d.date
-		}
-	});
-
-	const date_ISO = data.map(d => d.date),
-		date_left = date_ISO[date_ISO.length - 1],
-		date_right = date_ISO[0],
-
-		price_arr = data.map(stock => stock.close),
-		price_top = Math.max.apply(Math, price_arr),
-		price_bottom = Math.min.apply(Math, price_arr);
-
-	return {
-		"symbol": symbol,
-		"date_vs_time": date_vs_time,
-		"date_left": date_left,
-		"date_right": date_right,
-		"price_arr": price_arr,
-		"price_top": price_top,
-		"price_bottom": price_bottom
-	}
-}
-
-function findThenMap(data, symbol) {
-	return mapped(findStock(data, symbol), symbol);
-}
-
-module.exports = {
-	"mapData": findThenMap
-}
-},{}],49:[function(require,module,exports){
-'use strict';
-
 const $ = require("jquery");
 const io = require('socket.io-client');
-const helper = require('./d3-helpers.js');
-// const chart = require('./d3-chart.js');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
@@ -35566,7 +35536,7 @@ const socket = io.connect("http://localhost:5000");
 const localData = [];
 
 let timescale = 12;
-let symbol_state = '';
+let symbol_current = '';
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
@@ -35584,7 +35554,7 @@ $.ajax({
 		localData.push(stock);
 	})
 	//  plots ONE stock on init.
-	symbol_state = localData[0][0].symbol;
+	symbol_current = localData[0][0].symbol;
 
 	const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 
@@ -35595,7 +35565,7 @@ $.ajax({
 // ==== REQUESTS ====
 
 function addStock(symbol, range) {
-	console.log(range);
+	// console.log(range);
 	$.ajax({
 		url: '/add',
 		method: 'POST',
@@ -35613,6 +35583,9 @@ function addStock(symbol, range) {
 			data.map(stock => {
 				localData.push(stock);
 			})
+			
+			symbol_current = symbol;
+
 			const d = c3_helpers.mapData(localData, symbol);
 
 			c3_chart(d.dates, d.prices);
@@ -35629,6 +35602,7 @@ function removeStock(symbol) {
 		},
 		success: function (data) {
 			console.log("Data Deleted");
+			console.log(symbol_current);
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -35638,13 +35612,16 @@ function removeStock(symbol) {
 				localData.push(stock);
 			})
 
-			// chart.resetChart();
+
 			if (localData[0]) {
-				// chart.d3_chart(
-				// 	helper.mapData(localData, localData[0][0].symbol)
-				// )
+				// reset state
+				symbol_current = localData[0][0].symbol;
+
 				const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 				c3_chart(d.dates, d.prices);
+			} else {
+				// reset state				
+				symbol_current = '';
 			}
 		}
 	});
@@ -35652,7 +35629,7 @@ function removeStock(symbol) {
 
 
 function changeTimescale(symbol, range) {
-	console.log(range);
+	// console.log(range);
 	$.ajax({
 		url: '/timescale',
 		method: 'POST',
@@ -35674,7 +35651,7 @@ function changeTimescale(symbol, range) {
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart(d.dates, d.prices);
+			c3_chart(d.dates, d.prices, range);
 		},
 		error: function (err) {
 			console.log(err.status);
@@ -35731,7 +35708,7 @@ function toggleStockChart(symbol) {
 
 		const symbol = el.currentTarget.id;
 
-		symbol_state = symbol;
+		symbol_current = symbol;
 
 		const d = c3_helpers.mapData(localData, symbol);
 
@@ -35743,9 +35720,13 @@ function changeTimescaleEvent() {
 	$('.js-time-period').click(el => {
 		const months = el.currentTarget.getAttribute('value');
 
+		// element styling
+		$('.js-time-period').removeClass('active');
+		$(el.target).addClass('active');
+
 		timescale = months;
 
-		changeTimescale(symbol_state, months);
+		changeTimescale(symbol_current, months);
 
 	})
 }
@@ -35783,4 +35764,4 @@ function ticker_markup(symbol) {
 	deleteStockEvent(`a#${symbol}`);
 	toggleStockChart(`div#${symbol}`);
 }
-},{"./c3-chart.js":46,"./c3-helpers.js":47,"./d3-helpers.js":48,"jquery":30,"socket.io-client":35}]},{},[49]);
+},{"./c3-chart.js":46,"./c3-helpers.js":47,"jquery":30,"socket.io-client":35}]},{},[48]);

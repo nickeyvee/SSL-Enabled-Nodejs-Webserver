@@ -3,6 +3,19 @@
 		cursor: pointer;
 	}
 
+	.chart-wrapper.card-action {
+		padding-bottom: 0 !important;
+	}
+
+	.js-time-period {
+		display: inline-block;
+		height: 36px;
+	}
+
+	.active {
+		border-bottom: 2px solid #03a9f4;
+	}
+
 	.card .card-action {
 		border-top: none !important;
 		border-bottom: 1px solid rgba(160, 160, 160, 0.2);
@@ -25,12 +38,12 @@
 		<div class="col s12 m12 l12">
 			<div class="card" style="">
 				<div class="card-content">
-					<div class="card-action right-align">
+					<div class="chart-wrapper card-action right-align">
 						{{!--
 						<a href="javascript:;" id="1-day" class="timePeriod light-blue-text">1D</a> --}}
 						<a href="javascript:;" id="1-month" value="1" class="js-time-period light-blue-text">1M</a>
 						<a href="javascript:;" id="3-month" value="3" class="js-time-period light-blue-text">3M</a>
-						<a href="javascript:;" id="1-year" value="12" class="js-time-period light-blue-text">1Y</a>
+						<a href="javascript:;" id="1-year" value="12" class="js-time-period active light-blue-text">1Y</a>
 						<a href="javascript:;" id="5-year" value="60" class="js-time-period light-blue-text">5Y</a>
 					</div>
 					{{!--

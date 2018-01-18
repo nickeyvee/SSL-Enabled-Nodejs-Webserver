@@ -12,7 +12,14 @@ function dates(data) {
 }
 
 function prices(data, symbol) {
-	const prices = data.map(d => d.close.toFixed(2));
+
+	// console.log('\n');
+	// console.log('Prices() [function]\n');
+	// console.log('first index: ');
+	// console.log(data[0]);
+	// console.log('symbol : ' + symbol + '\n');
+
+	const prices = data.map((d, i) => d.close.toFixed(2));
 	prices.unshift(symbol);
 	return prices;
 }

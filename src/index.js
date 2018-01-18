@@ -2,8 +2,6 @@
 
 const $ = require("jquery");
 const io = require('socket.io-client');
-const helper = require('./d3-helpers.js');
-// const chart = require('./d3-chart.js');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
@@ -12,7 +10,7 @@ const socket = io.connect("http://localhost:5000");
 const localData = [];
 
 let timescale = 12;
-let symbol_state = '';
+let symbol_current = '';
 
 /**
  * NOTE : DON'T WORRY ABOUT TESTING CODE FROM VENDORS.
@@ -30,7 +28,7 @@ $.ajax({
 		localData.push(stock);
 	})
 	//  plots ONE stock on init.
-	symbol_state = localData[0][0].symbol;
+	symbol_current = localData[0][0].symbol;
 
 	const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 
@@ -41,7 +39,7 @@ $.ajax({
 // ==== REQUESTS ====
 
 function addStock(symbol, range) {
-	console.log(range);
+	// console.log(range);
 	$.ajax({
 		url: '/add',
 		method: 'POST',
@@ -59,6 +57,9 @@ function addStock(symbol, range) {
 			data.map(stock => {
 				localData.push(stock);
 			})
+			
+			symbol_current = symbol;
+
 			const d = c3_helpers.mapData(localData, symbol);
 
 			c3_chart(d.dates, d.prices);
@@ -75,6 +76,7 @@ function removeStock(symbol) {
 		},
 		success: function (data) {
 			console.log("Data Deleted");
+			console.log(symbol_current);
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -84,13 +86,16 @@ function removeStock(symbol) {
 				localData.push(stock);
 			})
 
-			// chart.resetChart();
+
 			if (localData[0]) {
-				// chart.d3_chart(
-				// 	helper.mapData(localData, localData[0][0].symbol)
-				// )
+				// reset state
+				symbol_current = localData[0][0].symbol;
+
 				const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 				c3_chart(d.dates, d.prices);
+			} else {
+				// reset state				
+				symbol_current = '';
 			}
 		}
 	});
@@ -98,7 +103,7 @@ function removeStock(symbol) {
 
 
 function changeTimescale(symbol, range) {
-	console.log(range);
+	// console.log(range);
 	$.ajax({
 		url: '/timescale',
 		method: 'POST',
@@ -120,7 +125,7 @@ function changeTimescale(symbol, range) {
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart(d.dates, d.prices);
+			c3_chart(d.dates, d.prices, range);
 		},
 		error: function (err) {
 			console.log(err.status);
@@ -177,7 +182,7 @@ function toggleStockChart(symbol) {
 
 		const symbol = el.currentTarget.id;
 
-		symbol_state = symbol;
+		symbol_current = symbol;
 
 		const d = c3_helpers.mapData(localData, symbol);
 
@@ -189,9 +194,13 @@ function changeTimescaleEvent() {
 	$('.js-time-period').click(el => {
 		const months = el.currentTarget.getAttribute('value');
 
+		// element styling
+		$('.js-time-period').removeClass('active');
+		$(el.target).addClass('active');
+
 		timescale = months;
 
-		changeTimescale(symbol_state, months);
+		changeTimescale(symbol_current, months);
 
 	})
 }

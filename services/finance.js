@@ -27,7 +27,7 @@ function getStocksBySymbol(symbols, range, period) {
 		today.setMonth(today.getMonth() - range);
 	}
 
-	if(range == 60) period = 'm';
+	if (range == 60) period = 'm';
 
 	const date_range = today.toISOString().substring(0, 10);
 
@@ -37,7 +37,24 @@ function getStocksBySymbol(symbols, range, period) {
 		to: today_formatted,
 		period: period,  // period: 'd'  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
 	}).then(data => {
-		return data;
+		/**
+		 * NULL VALUES ERROR :
+		 * The last item for each company contains null values
+		 * which breaks my application. It only happens when retrieving
+		 * stock information over a 60-month time period. May be a bug
+		 * with yahoo finance api.
+		 */
+		if (range == 60) {
+			for (let company in data) {
+				if (data.hasOwnProperty(company)) {
+					data[company].pop();
+				}
+			}
+			// console.log(data);
+			return data;
+		} else {
+			return data;
+		}
 	})
 }
 
@@ -59,7 +76,7 @@ function getOneStockBySymbol(symbol, range, period) {
 		today.setMonth(today.getMonth() - range);
 	}
 
-	if(range == 60) period = 'w';
+	if (range == 60) period = 'w';
 
 	const date_range = today.toISOString().substring(0, 10);
 
@@ -69,7 +86,21 @@ function getOneStockBySymbol(symbol, range, period) {
 		to: today_formatted,
 		period: period,  // period: 'd'  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
 	}).then(data => {
-		return data;
+
+		/**
+		 * FOR EXPLANATION ON RANGE CHECKING CONDITION,
+		 * SEE "NULL VALUES ERROR" ABOVE (SEARCH DOC WITH CTRL-F).
+		 */
+		if (range == 60) {
+			for (let company in data) {
+				if (data.hasOwnProperty(company)) {
+					data[company].pop();
+				}
+			}
+			return data;
+		} else {
+			return data;
+		}
 	})
 }
 

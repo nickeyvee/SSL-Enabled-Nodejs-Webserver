@@ -18,7 +18,7 @@ router.get('/stocks', function (req, res, next) {
 
 	// PRODUCE A JSON DOC FOR TESTS.
 	// const json = JSON.stringify(yahoo.localStockData);
-	// fs.writeFile('./tests/mocks/mockfile-12-month.json', json, 'utf8');
+	// fs.writeFile('./tests/mocks/mockfile-60-month.json', json, 'utf8');
 
 	res.json(yahoo.localStockData);
 });
