@@ -92,11 +92,7 @@ function getOneStockBySymbol(symbol, range, period) {
 		 * SEE "NULL VALUES ERROR" ABOVE (SEARCH DOC WITH CTRL-F).
 		 */
 		if (range == 60) {
-			for (let company in data) {
-				if (data.hasOwnProperty(company)) {
-					data[company].pop();
-				}
-			}
+			data.pop();
 			return data;
 		} else {
 			return data;

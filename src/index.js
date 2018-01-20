@@ -67,7 +67,7 @@ function addStock(symbol, range) {
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart.draw(d.dates, d.prices);
+			c3_chart.draw(d.dates, d.prices, range);
 
 			// CHECK
 			console.log('CURRENT : ', symbol_current);
@@ -184,6 +184,9 @@ function addStockEvent(callback) {
 	}
 	ticker_markup(symbol);
 
+	console.log('\n');
+	console.log('Timescale', timescale);
+
 	if (callback) {
 		callback(symbol, timescale);
 	}
@@ -207,7 +210,7 @@ function toggleStockChart(el, callback) {
 	symbol_current = symbol;
 
 	if (symbol) {
-		callback(d.dates, d.prices);
+		callback(d.dates, d.prices, timescale);
 	}
 }
 
