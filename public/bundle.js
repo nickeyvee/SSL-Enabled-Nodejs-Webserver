@@ -35541,7 +35541,7 @@ const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
 // make connection with websockets
-const socket = io.connect("http://localhost:5000");
+const socket = io.connect("https://localhost:5000", { secure: true });
 const localData = [];
 
 let timescale = 12;
@@ -35602,11 +35602,20 @@ function addStock(symbol, range) {
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart.draw(d.dates, d.prices);
+			c3_chart.draw(d.dates, d.prices, range);
+
+			socket.emit('add', {
+				'data': data,
+				'symbol': symbol,
+				'range': range
+			})
 
 			// CHECK
 			console.log('CURRENT : ', symbol_current);
 			console.log(localData.map(d => d[0].symbol));
+		},
+		error: function (err) {
+			throw new Error(err);
 		}
 	});
 }
@@ -35635,7 +35644,7 @@ function deleteStock(symbol) {
 
 				const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 
-				c3_chart.draw(d.dates, d.prices);
+				c3_chart.draw(d.dates, d.prices, timescale);
 			} else {
 				c3_chart.erase();
 				// reset state
@@ -35648,9 +35657,12 @@ function deleteStock(symbol) {
 
 			// trigger event on ALL other clients
 			socket.emit('delete', {
-				"data": data,
-				"symbol": symbol
+				'data': data,
+				'symbol': symbol
 			});
+		},
+		error: function (err) {
+			throw new Error(err);
 		}
 	});
 }
@@ -35684,14 +35696,13 @@ function changeTimescale(symbol, range) {
 
 			// trigger event on ALL other clients
 			socket.emit('timescale', {
-				"data": data,
-				"symbol": symbol,
-				"range": range
+				'data': data,
+				'symbol': symbol,
+				'range': range
 			});
 		},
 		error: function (err) {
-			console.log(err.status);
-			console.log(err.statusText);
+			throw new Error(err);
 		}
 	});
 }
@@ -35719,6 +35730,9 @@ function addStockEvent(callback) {
 	}
 	ticker_markup(symbol);
 
+	console.log('\n');
+	console.log('Timescale', timescale);
+
 	if (callback) {
 		callback(symbol, timescale);
 	}
@@ -35742,7 +35756,7 @@ function toggleStockChart(el, callback) {
 	symbol_current = symbol;
 
 	if (symbol) {
-		callback(d.dates, d.prices);
+		callback(d.dates, d.prices, timescale);
 	}
 }
 
@@ -35783,47 +35797,93 @@ $('.js-time-period').click(el => {
 
 
 // ==== SOCKET.IO EVENTS ====
-// socket.on('timescale', event => {
-// 	console.log("TIMESCALE EVENT RECIEVED");
-// 	// reset local state
-// 	localData.splice(0, localData.length);
 
-// 	// import updated state         
-// 	event.data.map(stock => {
-// 		localData.push(stock);
-// 	})
+socket.on('add', event => {
+	console.log("ADD EVENT RECIEVED");
 
-// 	const d = c3_helpers.mapData(localData, event.symbol);
+	// update UI
+	ticker_markup(event.symbol);
 
-// 	c3_chart.draw(d.dates, d.prices, event.range);
-// });
+	// reset local state
+	localData.splice(0, localData.length);
+
+	// import updated state         
+	event.data.map(stock => {
+		localData.push(stock);
+	})
+
+	symbol_current = event.symbol;
+
+	const d = c3_helpers.mapData(localData, event.symbol);
+
+	c3_chart.draw(d.dates, d.prices, event.range);
+
+	// CHECK
+	console.log('CURRENT : ', symbol_current);
+	console.log(localData.map(d => d[0].symbol));
+})
 
 
-// socket.on('delete', event => {
-// 	console.log("DELETE EVENT RECIEVED");
-// 	// update UI
-// 	$(`div#${symbol}`).parent().remove();
-// 	$(`div#${symbol}`).remove();
+socket.on('timescale', event => {
+	console.log("TIMESCALE EVENT RECIEVED");
 
-// 	// reset local state
-// 	localData.splice(0, localData.length);
+	// change UI
+	$('.js-time-period').removeClass('active');
 
-// 	// import updated state
-// 	event.data.map(stock => {
-// 		localData.push(stock);
-// 	})
+	if (event.range < 12) {
+		$(`#${event.range}-month`).addClass('active');
+	} else {
+		$(`#${event.range / 12}-year`).addClass('active');
+	}
+	// reset local state
+	localData.splice(0, localData.length);
 
-// 	if (localData[0]) {
-// 		// reset state
-// 		symbol_current = localData[0][0].symbol;
+	// import updated state         
+	event.data.map(stock => {
+		localData.push(stock);
+	})
 
-// 		const d = c3_helpers.mapData(localData, localData[0][0].symbol);
-// 		c3_chart.draw(d.dates, d.prices);
-// 	} else {
-// 		// reset state				
-// 		symbol_current = '';
-// 	}
-// })
+	const d = c3_helpers.mapData(localData, event.symbol);
+
+	c3_chart.draw(d.dates, d.prices, event.range);
+
+	// CHECK
+	console.log('CURRENT : ', symbol_current);
+	console.log(localData.map(d => d[0].symbol));
+});
+
+
+socket.on('delete', event => {
+	console.log("DELETE EVENT RECIEVED");
+
+	// update UI
+	$(`div#${event.symbol}`).parent().remove();
+	$(`div#${event.symbol}`).remove();
+
+	// reset local state
+	localData.splice(0, localData.length);
+
+	// import updated state
+	event.data.map(stock => {
+		localData.push(stock);
+	})
+
+	if (localData[0]) {
+		// reset state
+		symbol_current = localData[0][0].symbol;
+
+		const d = c3_helpers.mapData(localData, localData[0][0].symbol);
+		c3_chart.draw(d.dates, d.prices);
+	} else {
+		// reset state
+		c3_chart.erase();
+		symbol_current = '';
+	}
+
+	// CHECK
+	console.log('CURRENT : ', symbol_current);
+	console.log(localData.map(d => d[0].symbol));
+})
 
 
 // ==== Vanilla.js stock ticker component ====
