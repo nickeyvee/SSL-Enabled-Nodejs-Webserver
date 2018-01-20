@@ -128,13 +128,21 @@ function storeStocksLocally(data) {
 function removeStock(symbol) {
 	let index;
 	for (let i = 0; i < localStockData.length; i++) {
-		if (localStockData[i].symbol === symbol) {
+
+		if (localStockData[i][0].symbol === symbol) {
+			console.log('\n');
+			console.log('FOUND SYMBOL');
 			index = i;
 		}
 	}
 	if (index !== -1) {
 		localStockData.splice(index, 1);
 	}
+	console.log('\n');
+	console.log("argument : ", symbol);
+	console.log("found at index : ", index);
+	console.log(localStockData.map(d => d[0].symbol));
+	console.log('\n');	
 }
 
 

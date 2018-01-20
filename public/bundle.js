@@ -35428,12 +35428,14 @@ const $ = require("jquery");
 const d3 = require('d3');
 const c3 = require('c3');
 
+let chart;
 
-function c3_chart(dates, prices, range) {
+function draw(dates, prices, range) {
 
 	const months = [
 		'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
+	
 	// console.log('\n');
 	// console.log('c3_chart() [function]');
 	// console.log('Dates : ');
@@ -35451,7 +35453,7 @@ function c3_chart(dates, prices, range) {
 		date_format = '%m %d';
 	}
 
-	var chart = c3.generate({
+	chart = c3.generate({
 		data: {
 			x: 'x',
 			columns: [dates, prices],
@@ -35485,7 +35487,14 @@ function c3_chart(dates, prices, range) {
 	$(`#chart .c3-line-${prices[0]}`).css({ "stroke-width": "2px" });
 }
 
-module.exports = c3_chart;
+
+function erase() {
+	chart = chart.destroy();
+}
+
+module.exports = {
+	draw, erase
+}
 },{"c3":7,"d3":11,"jquery":30}],47:[function(require,module,exports){
 'use strict';
 
@@ -35558,7 +35567,12 @@ $.ajax({
 
 	const d = c3_helpers.mapData(localData, localData[0][0].symbol);
 
-	c3_chart(d.dates, d.prices);
+	c3_chart.draw(d.dates, d.prices);
+
+	// CHECK
+	console.log('INIT');
+	console.log('CURRENT : ', symbol_current);
+	console.log(localData.map(d => d[0].symbol));
 
 });
 
@@ -35583,17 +35597,21 @@ function addStock(symbol, range) {
 			data.map(stock => {
 				localData.push(stock);
 			})
-			
+
 			symbol_current = symbol;
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart(d.dates, d.prices);
+			c3_chart.draw(d.dates, d.prices);
+
+			// CHECK
+			console.log('CURRENT : ', symbol_current);
+			console.log(localData.map(d => d[0].symbol));
 		}
 	});
 }
 
-function removeStock(symbol) {
+function deleteStock(symbol) {
 	$.ajax({
 		type: "DELETE",
 		url: '/remove',
@@ -35601,8 +35619,7 @@ function removeStock(symbol) {
 			'symbol': symbol
 		},
 		success: function (data) {
-			console.log("Data Deleted");
-			console.log(symbol_current);
+			console.log("DELETE REQUEST COMPLETE");
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -35612,17 +35629,28 @@ function removeStock(symbol) {
 				localData.push(stock);
 			})
 
-
 			if (localData[0]) {
 				// reset state
 				symbol_current = localData[0][0].symbol;
 
 				const d = c3_helpers.mapData(localData, localData[0][0].symbol);
-				c3_chart(d.dates, d.prices);
+
+				c3_chart.draw(d.dates, d.prices);
 			} else {
-				// reset state				
+				c3_chart.erase();
+				// reset state
 				symbol_current = '';
 			}
+
+			// CHECK
+			console.log('CURRENT : ', symbol_current);
+			console.log(localData.map(d => d[0].symbol));
+
+			// trigger event on ALL other clients
+			socket.emit('delete', {
+				"data": data,
+				"symbol": symbol
+			});
 		}
 	});
 }
@@ -35640,6 +35668,7 @@ function changeTimescale(symbol, range) {
 		success: function (data) {
 			console.log("Data Added");
 			console.log(data, symbol);
+			toggleLoader();
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -35651,7 +35680,14 @@ function changeTimescale(symbol, range) {
 
 			const d = c3_helpers.mapData(localData, symbol);
 
-			c3_chart(d.dates, d.prices, range);
+			c3_chart.draw(d.dates, d.prices, range);
+
+			// trigger event on ALL other clients
+			socket.emit('timescale', {
+				"data": data,
+				"symbol": symbol,
+				"range": range
+			});
 		},
 		error: function (err) {
 			console.log(err.status);
@@ -35663,82 +35699,131 @@ function changeTimescale(symbol, range) {
 
 // ==== USER EVENT REGISTRATION ====
 
-function addStockEvent(target) {
-	$(target).click(el => {
-		const symbol = $('#ticker_symbol').val().toUpperCase();
-		// append new HTML
-		const exists = localData.find(stock => stock[0].symbol === symbol);
+function addStockEvent(callback) {
+	const symbol = $('#ticker_symbol').val().toUpperCase();
+	// append new HTML
+	const exists = localData.find(stock => stock[0].symbol === symbol);
+	const re = /^[A-Z]+$/;
 
-		const re = /^[A-Z]+$/;
+	if (!re.test(symbol)) {
+		console.log('String is invalid');
+		return;
+	} else if (symbol.length > 4) {
+		console.log('String is invalid');
+		return;
+	}
 
-		if (!re.test(symbol)) {
-			console.log('String is invalid');
-			return;
-		} else if (symbol.length > 4) {
-			console.log('String is invalid');
-			return;
-		}
+	if (exists) {
+		console.log('already added');
+		return;
+	}
+	ticker_markup(symbol);
 
-		if (exists) {
-			console.log('already added');
-			return;
-		}
-
-		ticker_markup(symbol);
-
-		addStock(symbol, timescale);
-	})
+	if (callback) {
+		callback(symbol, timescale);
+	}
 }
 
 
-function deleteStockEvent(target) {
-	$(target).click(el => {
-		const symbol = el.currentTarget.id;
+function deleteStockEvent(el, callback) {
+	const symbol = el.currentTarget.id;
+	$(`div#${symbol}`).parent().remove();
+	$(`div#${symbol}`).remove();
 
-		$(`div#${symbol}`).parent().remove();
-		$(`div#${symbol}`).remove();
-
-		removeStock(symbol);
-	});
+	if (callback) {
+		callback(symbol);
+	}
 }
 
 
-function toggleStockChart(symbol) {
-	$(symbol).click(el => {
+function toggleStockChart(el, callback) {
+	const symbol = el.currentTarget.id,
+		d = c3_helpers.mapData(localData, symbol);
+	symbol_current = symbol;
 
-		const symbol = el.currentTarget.id;
-
-		symbol_current = symbol;
-
-		const d = c3_helpers.mapData(localData, symbol);
-
-		c3_chart(d.dates, d.prices);
-	});
+	if (symbol) {
+		callback(d.dates, d.prices);
+	}
 }
 
-function changeTimescaleEvent() {
-	$('.js-time-period').click(el => {
-		const months = el.currentTarget.getAttribute('value');
 
-		// element styling
-		$('.js-time-period').removeClass('active');
-		$(el.target).addClass('active');
+function changeTimescaleEvent(el, callback) {
+	const months = el.currentTarget.getAttribute('value');
 
-		timescale = months;
+	// element styling
+	$('.js-time-period').removeClass('active');
+	$(el.target).addClass('active');
 
-		changeTimescale(symbol_current, months);
+	toggleLoader();
+	timescale = months;
 
-	})
+	if (callback) {
+		callback(symbol_current, months);
+	}
 }
 
-// initialize our events
-addStockEvent('.add-stock');
 
-deleteStockEvent('.js-remove-ticker');
+// ==== INTITIALIZE EVENTS ON PAGE LOAD ====
 
-toggleStockChart('.js-toggle-ticker');
+$('.add-stock').click(() => {
+	addStockEvent(addStock);
+});
 
-changeTimescaleEvent();
+$('.js-remove-ticker').click(el => {
+	deleteStockEvent(el, deleteStock);
+});
+
+$('.js-toggle-ticker').click(el => {
+	toggleStockChart(el, c3_chart.draw);
+})
+
+$('.js-time-period').click(el => {
+	changeTimescaleEvent(el, changeTimescale);
+})
+
+
+// ==== SOCKET.IO EVENTS ====
+// socket.on('timescale', event => {
+// 	console.log("TIMESCALE EVENT RECIEVED");
+// 	// reset local state
+// 	localData.splice(0, localData.length);
+
+// 	// import updated state         
+// 	event.data.map(stock => {
+// 		localData.push(stock);
+// 	})
+
+// 	const d = c3_helpers.mapData(localData, event.symbol);
+
+// 	c3_chart.draw(d.dates, d.prices, event.range);
+// });
+
+
+// socket.on('delete', event => {
+// 	console.log("DELETE EVENT RECIEVED");
+// 	// update UI
+// 	$(`div#${symbol}`).parent().remove();
+// 	$(`div#${symbol}`).remove();
+
+// 	// reset local state
+// 	localData.splice(0, localData.length);
+
+// 	// import updated state
+// 	event.data.map(stock => {
+// 		localData.push(stock);
+// 	})
+
+// 	if (localData[0]) {
+// 		// reset state
+// 		symbol_current = localData[0][0].symbol;
+
+// 		const d = c3_helpers.mapData(localData, localData[0][0].symbol);
+// 		c3_chart.draw(d.dates, d.prices);
+// 	} else {
+// 		// reset state				
+// 		symbol_current = '';
+// 	}
+// })
 
 
 // ==== Vanilla.js stock ticker component ====
@@ -35761,7 +35846,18 @@ function ticker_markup(symbol) {
 	 * since our HTML is brand-new we must 
 	 * re-add our event listeners.
 	 */
-	deleteStockEvent(`a#${symbol}`);
-	toggleStockChart(`div#${symbol}`);
+	$(`a#${symbol}`).click(el => {
+		deleteStockEvent(el, deleteStock);
+	});
+
+	$(`div#${symbol}`).click(el => {
+		toggleStockChart(el, c3_chart.draw);
+	})
+}
+
+
+function toggleLoader() {
+	// $('.loader svg.lds-rolling').toggleClass('hidden');
+	$('#chart svg').toggleClass('loading');
 }
 },{"./c3-chart.js":46,"./c3-helpers.js":47,"jquery":30,"socket.io-client":35}]},{},[48]);

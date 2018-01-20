@@ -1,19 +1,41 @@
 <style>
+	.hidden {
+		visibility: hidden;
+	}
+
+	.active {
+		border-bottom: 2px solid #03a9f4;
+	}
+
+	.loader svg.lds-rolling {
+		position: absolute;
+		left: 45%;
+		top: 43%;
+	}
+
+	.loading {
+		opacity: 0.4;
+	}
+
+	#chart svg {
+		/*opacity: 0.4;*/
+	}
+
 	.js-toggle-ticker {
 		cursor: pointer;
 	}
 
-	.chart-wrapper.card-action {
+	.chart-wrapper.card-content {
+		min-height: 420.667px;
+	}
+
+	.chart-wrapper .card-action {
 		padding-bottom: 0 !important;
 	}
 
 	.js-time-period {
 		display: inline-block;
 		height: 36px;
-	}
-
-	.active {
-		border-bottom: 2px solid #03a9f4;
 	}
 
 	.card .card-action {
@@ -37,8 +59,8 @@
 	<div class="row">
 		<div class="col s12 m12 l12">
 			<div class="card" style="">
-				<div class="card-content">
-					<div class="chart-wrapper card-action right-align">
+				<div class="chart-wrapper card-content">
+					<div class="card-action right-align">
 						{{!--
 						<a href="javascript:;" id="1-day" class="timePeriod light-blue-text">1D</a> --}}
 						<a href="javascript:;" id="1-month" value="1" class="js-time-period light-blue-text">1M</a>
@@ -48,7 +70,17 @@
 					</div>
 					{{!--
 					<svg id="visualisation" width="100%" height="300"></svg> --}}
-					<div id="chart"></div>
+					<div class="loader">
+						<svg class="lds-rolling hidden" width="90px" height="90px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-rolling"
+						 style="background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;">
+							<circle cx="50" cy="50" fill="none" ng-attr-stroke="{{config.color}}" ng-attr-stroke-width="{{config.width}}" ng-attr-r="{{config.radius}}"
+							 ng-attr-stroke-dasharray="{{config.dasharray}}" stroke="#03a9f4" stroke-width="7" r="35" stroke-dasharray="164.93361431346415 56.97787143782138">
+								<animateTransform attributeName="transform" type="rotate" calcMode="linear" values="0 50 50;360 50 50" keyTimes="0;1" dur="0.9s"
+								 begin="0s" repeatCount="indefinite"></animateTransform>
+							</circle>
+						</svg>
+						<div id="chart"></div>
+					</div>
 				</div>
 			</div>
 		</div>

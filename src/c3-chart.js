@@ -4,12 +4,14 @@ const $ = require("jquery");
 const d3 = require('d3');
 const c3 = require('c3');
 
+let chart;
 
-function c3_chart(dates, prices, range) {
+function draw(dates, prices, range) {
 
 	const months = [
 		'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
+	
 	// console.log('\n');
 	// console.log('c3_chart() [function]');
 	// console.log('Dates : ');
@@ -27,7 +29,7 @@ function c3_chart(dates, prices, range) {
 		date_format = '%m %d';
 	}
 
-	var chart = c3.generate({
+	chart = c3.generate({
 		data: {
 			x: 'x',
 			columns: [dates, prices],
@@ -61,4 +63,11 @@ function c3_chart(dates, prices, range) {
 	$(`#chart .c3-line-${prices[0]}`).css({ "stroke-width": "2px" });
 }
 
-module.exports = c3_chart;
+
+function erase() {
+	chart = chart.destroy();
+}
+
+module.exports = {
+	draw, erase
+}
