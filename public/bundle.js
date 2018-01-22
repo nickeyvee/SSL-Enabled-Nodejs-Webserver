@@ -35540,8 +35540,9 @@ const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
+
 // make connection with websockets
-const socket = io.connect("https://localhost:5000", { secure: true });
+const socket = io.connect("https://oceandroplet.com"); // http://localhost:5000
 const localData = [];
 
 let timescale = 12;
@@ -35725,7 +35726,8 @@ function addStockEvent(callback) {
 	}
 
 	if (exists) {
-		console.log('already added');
+		$('.topbar').remove();
+		topBar("Already added");
 		return;
 	}
 	ticker_markup(symbol);
@@ -35919,5 +35921,11 @@ function ticker_markup(symbol) {
 function toggleLoader() {
 	// $('.loader svg.lds-rolling').toggleClass('hidden');
 	$('#chart svg').toggleClass('loading');
+}
+
+
+function topBar(message) {
+	$("<div />", { class: 'topbar', text: message }).hide().prependTo("body")
+		.slideDown('fast').delay(7500).slideUp(function() { $(this).remove(); });
 }
 },{"./c3-chart.js":46,"./c3-helpers.js":47,"jquery":30,"socket.io-client":35}]},{},[48]);

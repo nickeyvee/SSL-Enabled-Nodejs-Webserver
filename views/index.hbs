@@ -1,60 +1,3 @@
-<style>
-	.hidden {
-		visibility: hidden;
-	}
-
-	.active {
-		border-bottom: 2px solid #03a9f4;
-	}
-
-	.loader svg.lds-rolling {
-		position: absolute;
-		left: 45%;
-		top: 43%;
-	}
-
-	.loading {
-		opacity: 0.4;
-	}
-
-	#chart svg {
-		/*opacity: 0.4;*/
-	}
-
-	.js-toggle-ticker {
-		cursor: pointer;
-	}
-
-	.chart-wrapper.card-content {
-		min-height: 420.667px;
-	}
-
-	.chart-wrapper .card-action {
-		padding-bottom: 0 !important;
-	}
-
-	.js-time-period {
-		display: inline-block;
-		height: 36px;
-	}
-
-	.card .card-action {
-		border-top: none !important;
-		border-bottom: 1px solid rgba(160, 160, 160, 0.2);
-	}
-
-	div .card-content {
-		margin-top: 15px;
-	}
-
-	.domain {
-		display: none !important;
-	}
-
-	.c3-event-rects {
-		cursor: crosshair;
-	}
-</style>
 <div class="container" style="width: 85%">
 	<div class="row">
 		<div class="col s12 m12 l12">
@@ -63,10 +6,10 @@
 					<div class="card-action right-align">
 						{{!--
 						<a href="javascript:;" id="1-day" class="timePeriod light-blue-text">1D</a> --}}
-						<a href="javascript:;" id="1-month" value="1" class="js-time-period light-blue-text">1M</a>
-						<a href="javascript:;" id="3-month" value="3" class="js-time-period light-blue-text">3M</a>
-						<a href="javascript:;" id="1-year" value="12" class="js-time-period active light-blue-text">1Y</a>
-						<a href="javascript:;" id="5-year" value="60" class="js-time-period light-blue-text">5Y</a>
+						<button id="1-month" value="1" class="js-time-period light-blue-text">1M</button>
+						<button id="3-month" value="3" class="js-time-period light-blue-text">3M</button>
+						<button id="1-year" value="12" class="js-time-period active light-blue-text">1Y</button>
+						<button id="5-year" value="60" class="js-time-period light-blue-text">5Y</button>
 					</div>
 					{{!--
 					<svg id="visualisation" width="100%" height="300"></svg> --}}
@@ -100,13 +43,13 @@
 		{{/each}}
 
 		<div class="col s12 m12 l4">
-			<div class="card" style="min-height: 80px;">
-				<div class="card-content">
+			<div id="search_bar" class="card" style="min-height: 80px;">
+				<div class="card-content" style="padding-bottom: 0;">
 					<p>Enter a ticker</p>
 					<input id="ticker_symbol" type="text" placeholder="AAPL">
 				</div>
 				<div class="card-action">
-					<a href="javascript:;" class="add-stock">Add</a>
+					<button class="add-stock">Add</button>
 				</div>
 			</div>
 		</div>
