@@ -59,6 +59,11 @@ io.on('connection', function (socket) {
 		socket.broadcast.emit('delete', data);
 	})
 
+	// toggle
+	socket.on('toggle', data => {
+		socket.broadcast.emit('toggle', data);
+	})
+
 });
 
 /**

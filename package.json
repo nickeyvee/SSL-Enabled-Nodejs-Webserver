@@ -10,6 +10,7 @@
       "stop": "pm2 kill"
    },
    "dependencies": {
+      "bez": "^0.1.0",
       "body-parser": "~1.18.2",
       "c3": "^0.4.18",
       "cookie-parser": "~1.4.3",

@@ -216,6 +216,53 @@ Backoff.prototype.setJitter = function(jitter){
 })();
 
 },{}],5:[function(require,module,exports){
+/*!
+ * Bez @VERSION
+ * http://github.com/rdallasgray/bez
+ * 
+ * A plugin to convert CSS3 cubic-bezier co-ordinates to jQuery-compatible easing functions
+ * 
+ * With thanks to Nikolay Nemshilov for clarification on the cubic-bezier maths
+ * See http://st-on-it.blogspot.com/2011/05/calculating-cubic-bezier-function.html
+ * 
+ * Copyright @YEAR Robert Dallas Gray. All rights reserved.
+ * Provided under the FreeBSD license: https://github.com/rdallasgray/bez/blob/master/LICENSE.txt
+*/
+module.exports = function(jQuery) {
+jQuery.extend({ bez: function(coOrdArray) {
+	var encodedFuncName = "bez_" + jQuery.makeArray(arguments).join("_").replace(/\./g, "p");
+	if (typeof jQuery.easing[encodedFuncName] !== "function") {
+		var	polyBez = function(p1, p2) {
+			var A = [null, null], B = [null, null], C = [null, null],
+				bezCoOrd = function(t, ax) {
+					C[ax] = 3 * p1[ax], B[ax] = 3 * (p2[ax] - p1[ax]) - C[ax], A[ax] = 1 - C[ax] - B[ax];
+					return t * (C[ax] + t * (B[ax] + t * A[ax]));
+				},
+				xDeriv = function(t) {
+					return C[0] + t * (2 * B[0] + 3 * A[0] * t);
+				},
+				xForT = function(t) {
+					var x = t, i = 0, z;
+					while (++i < 14) {
+						z = bezCoOrd(x, 0) - t;
+						if (Math.abs(z) < 1e-3) break;
+						x -= z / xDeriv(x);
+					}
+					return x;
+				};
+				return function(t) {
+					return bezCoOrd(xForT(t), 1);
+				}
+		};
+		jQuery.easing[encodedFuncName] = function(x, t, b, c, d) {
+			return c * polyBez([coOrdArray[0], coOrdArray[1]], [coOrdArray[2], coOrdArray[3]])(t/d) + b;
+		}
+	}
+	return encodedFuncName;
+}});
+}
+
+},{}],6:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -315,9 +362,9 @@ module.exports = (function() {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
-
 },{}],7:[function(require,module,exports){
+
+},{}],8:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -9555,7 +9602,7 @@ return c3$1;
 
 })));
 
-},{"d3":11}],8:[function(require,module,exports){
+},{"d3":12}],9:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -9580,7 +9627,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -9745,7 +9792,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -9753,7 +9800,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.17"
@@ -19308,7 +19355,7 @@ module.exports = function(a, b){
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -19497,7 +19544,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":13,"_process":34}],13:[function(require,module,exports){
+},{"./debug":14,"_process":35}],14:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -19701,7 +19748,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":31}],14:[function(require,module,exports){
+},{"ms":32}],15:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -19713,7 +19760,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":15,"engine.io-parser":23}],15:[function(require,module,exports){
+},{"./socket":16,"engine.io-parser":24}],16:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -20460,7 +20507,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":16,"./transports/index":17,"component-emitter":9,"debug":12,"engine.io-parser":23,"indexof":29,"parseqs":32,"parseuri":33}],16:[function(require,module,exports){
+},{"./transport":17,"./transports/index":18,"component-emitter":10,"debug":13,"engine.io-parser":24,"indexof":30,"parseqs":33,"parseuri":34}],17:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -20619,7 +20666,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":9,"engine.io-parser":23}],17:[function(require,module,exports){
+},{"component-emitter":10,"engine.io-parser":24}],18:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -20676,7 +20723,7 @@ function polling (opts) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":18,"./polling-xhr":19,"./websocket":21,"xmlhttprequest-ssl":22}],18:[function(require,module,exports){
+},{"./polling-jsonp":19,"./polling-xhr":20,"./websocket":22,"xmlhttprequest-ssl":23}],19:[function(require,module,exports){
 (function (global){
 
 /**
@@ -20911,7 +20958,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":20,"component-inherit":10}],19:[function(require,module,exports){
+},{"./polling":21,"component-inherit":11}],20:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -21328,7 +21375,7 @@ function unloadHandler () {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":20,"component-emitter":9,"component-inherit":10,"debug":12,"xmlhttprequest-ssl":22}],20:[function(require,module,exports){
+},{"./polling":21,"component-emitter":10,"component-inherit":11,"debug":13,"xmlhttprequest-ssl":23}],21:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -21575,7 +21622,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":16,"component-inherit":10,"debug":12,"engine.io-parser":23,"parseqs":32,"xmlhttprequest-ssl":22,"yeast":45}],21:[function(require,module,exports){
+},{"../transport":17,"component-inherit":11,"debug":13,"engine.io-parser":24,"parseqs":33,"xmlhttprequest-ssl":23,"yeast":46}],22:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -21865,7 +21912,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":16,"component-inherit":10,"debug":12,"engine.io-parser":23,"parseqs":32,"ws":6,"yeast":45}],22:[function(require,module,exports){
+},{"../transport":17,"component-inherit":11,"debug":13,"engine.io-parser":24,"parseqs":33,"ws":7,"yeast":46}],23:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -21906,7 +21953,7 @@ module.exports = function (opts) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":28}],23:[function(require,module,exports){
+},{"has-cors":29}],24:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -22516,7 +22563,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":24,"./utf8":25,"after":1,"arraybuffer.slice":2,"base64-arraybuffer":4,"blob":5,"has-binary2":26}],24:[function(require,module,exports){
+},{"./keys":25,"./utf8":26,"after":1,"arraybuffer.slice":2,"base64-arraybuffer":4,"blob":6,"has-binary2":27}],25:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -22537,7 +22584,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.1.2 by @mathias */
 ;(function(root) {
@@ -22796,7 +22843,7 @@ module.exports = Object.keys || function keys (obj){
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function (global){
 /* global Blob File */
 
@@ -22862,14 +22909,14 @@ function hasBinary (obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":27}],27:[function(require,module,exports){
+},{"isarray":28}],28:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -22888,7 +22935,7 @@ try {
   module.exports = false;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -22899,7 +22946,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -33154,7 +33201,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -33308,7 +33355,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -33347,7 +33394,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -33388,7 +33435,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -33574,7 +33621,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -33670,7 +33717,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":36,"./socket":38,"./url":39,"debug":12,"socket.io-parser":41}],36:[function(require,module,exports){
+},{"./manager":37,"./socket":39,"./url":40,"debug":13,"socket.io-parser":42}],37:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -34245,7 +34292,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":37,"./socket":38,"backo2":3,"component-bind":8,"component-emitter":9,"debug":12,"engine.io-client":14,"indexof":29,"socket.io-parser":41}],37:[function(require,module,exports){
+},{"./on":38,"./socket":39,"backo2":3,"component-bind":9,"component-emitter":10,"debug":13,"engine.io-client":15,"indexof":30,"socket.io-parser":42}],38:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -34271,7 +34318,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -34691,7 +34738,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":37,"component-bind":8,"component-emitter":9,"debug":12,"parseqs":32,"socket.io-parser":41,"to-array":44}],39:[function(require,module,exports){
+},{"./on":38,"component-bind":9,"component-emitter":10,"debug":13,"parseqs":33,"socket.io-parser":42,"to-array":45}],40:[function(require,module,exports){
 (function (global){
 
 /**
@@ -34770,7 +34817,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":12,"parseuri":33}],40:[function(require,module,exports){
+},{"debug":13,"parseuri":34}],41:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -34915,7 +34962,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":42,"isarray":43}],41:[function(require,module,exports){
+},{"./is-buffer":43,"isarray":44}],42:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -35317,7 +35364,7 @@ function error() {
   };
 }
 
-},{"./binary":40,"./is-buffer":42,"component-emitter":9,"debug":12,"has-binary2":26}],42:[function(require,module,exports){
+},{"./binary":41,"./is-buffer":43,"component-emitter":10,"debug":13,"has-binary2":27}],43:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -35334,9 +35381,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],43:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"dup":27}],44:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
+arguments[4][28][0].apply(exports,arguments)
+},{"dup":28}],45:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -35351,7 +35398,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -35421,7 +35468,7 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 
 const $ = require("jquery");
@@ -35497,7 +35544,7 @@ function erase() {
 module.exports = {
 	draw, erase
 }
-},{"c3":7,"d3":11,"jquery":30}],47:[function(require,module,exports){
+},{"c3":8,"d3":12,"jquery":31}],48:[function(require,module,exports){
 'use strict';
 
 function findStock(data, symbol) {
@@ -35534,10 +35581,11 @@ function data(data, symbol) {
 module.exports = {
 	"mapData": data
 }
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 
 const $ = require("jquery");
+const bez = require('bez');
 const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
@@ -35563,8 +35611,8 @@ $.ajax({
 	method: 'GET'
 }).then(function (data) {
 	// store in client.
-	console.log('store in client');
-	console.log(data);
+	// console.log('store in client');
+	// console.log(data);
 	data.map(stock => {
 		localData.push(stock);
 	})
@@ -35576,9 +35624,9 @@ $.ajax({
 	c3_chart.draw(d.dates, d.prices);
 
 	// CHECK
-	console.log('INIT');
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('INIT');
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 
 });
 
@@ -35594,7 +35642,7 @@ function addStock(symbol, range) {
 			'range': range
 		},
 		success: function (data) {
-			console.log("Data Added");
+			// console.log("Data Added");
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -35617,8 +35665,8 @@ function addStock(symbol, range) {
 			})
 
 			// CHECK
-			console.log('CURRENT : ', symbol_current);
-			console.log(localData.map(d => d[0].symbol));
+			// console.log('CURRENT : ', symbol_current);
+			// console.log(localData.map(d => d[0].symbol));
 		},
 		error: function (err) {
 			throw new Error(err);
@@ -35636,7 +35684,7 @@ function deleteStock(symbol) {
 			'symbol': symbol
 		},
 		success: function (data) {
-			console.log("DELETE REQUEST COMPLETE");
+			// console.log("DELETE REQUEST COMPLETE");
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -35660,8 +35708,8 @@ function deleteStock(symbol) {
 			}
 
 			// CHECK
-			console.log('CURRENT : ', symbol_current);
-			console.log(localData.map(d => d[0].symbol));
+			// console.log('CURRENT : ', symbol_current);
+			// console.log(localData.map(d => d[0].symbol));
 
 			// trigger event on ALL other clients
 			socket.emit('delete', {
@@ -35686,8 +35734,8 @@ function changeTimescale(symbol, range) {
 			'range': range
 		},
 		success: function (data) {
-			console.log("Data Added");
-			console.log(data, symbol);
+			// console.log("Data Added");
+			// console.log(data, symbol);
 			toggleLoader();
 
 			// reset local state
@@ -35725,10 +35773,10 @@ function addStockEvent(callback) {
 	const re = /^[A-Z]+$/;
 
 	if (!re.test(symbol)) {
-		console.log('String is invalid');
+		// console.log('String is invalid');
 		return;
 	} else if (symbol.length > 4) {
-		console.log('String is invalid');
+		// console.log('String is invalid');
 		return;
 	}
 
@@ -35760,13 +35808,23 @@ function deleteStockEvent(el, callback) {
 
 
 function toggleStockChart(el, callback) {
-	const symbol = el.currentTarget.id,
-		d = c3_helpers.mapData(localData, symbol);
+	const symbol = el.currentTarget.id;
+	const d = c3_helpers.mapData(localData, symbol);
 	symbol_current = symbol;
+
+	// update UI
+	const target = $(`#${symbol} .card-title`);
+	$('.js-toggle-ticker .card-title').removeClass('highlight');
+	target.addClass('highlight');
 
 	if (symbol) {
 		callback(d.dates, d.prices, timescale);
 	}
+
+	// trigger event on ALL other clients
+	socket.emit('toggle', {
+		'symbol': symbol
+	});
 }
 
 
@@ -35808,7 +35866,7 @@ $('.js-time-period').click(el => {
 // ==== SOCKET.IO EVENTS ====
 
 socket.on('add', event => {
-	console.log("ADD EVENT RECIEVED");
+	// console.log("ADD EVENT RECIEVED");
 
 	// update UI
 	ticker_markup(event.symbol);
@@ -35828,13 +35886,13 @@ socket.on('add', event => {
 	c3_chart.draw(d.dates, d.prices, event.range);
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 })
 
 
 socket.on('timescale', event => {
-	console.log("TIMESCALE EVENT RECIEVED");
+	// console.log("TIMESCALE EVENT RECIEVED");
 
 	// change UI
 	$('.js-time-period').removeClass('active');
@@ -35857,13 +35915,13 @@ socket.on('timescale', event => {
 	c3_chart.draw(d.dates, d.prices, event.range);
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 });
 
 
 socket.on('delete', event => {
-	console.log("DELETE EVENT RECIEVED");
+	// console.log("DELETE EVENT RECIEVED");
 
 	// update UI
 	$(`div#${event.symbol}`).parent().remove();
@@ -35890,8 +35948,22 @@ socket.on('delete', event => {
 	}
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
+})
+
+
+// toggle
+socket.on('toggle', event => {
+	const d = c3_helpers.mapData(localData, event.symbol);
+	symbol_current = event.symbol;
+
+	$('.js-toggle-ticker .card-title').removeClass('highlight');
+	$(`#${event.symbol} .card-title`).addClass('highlight');
+
+	if (event.symbol) {
+		c3_chart.draw(d.dates, d.prices, timescale);
+	}
 })
 
 
@@ -35933,7 +36005,11 @@ function toggleLoader() {
 
 function topBar(message) {
 	$("<div />", { class: 'topbar', text: message }).hide().prependTo("body")
-		.slideDown('fast').delay(7500).slideUp(function() { $(this).remove(); });
+		.slideDown('fast').delay(7500).slideUp(function () { $(this).remove(); });
+}
+
+function animate(symbol) {
+
 }
 
 
@@ -35943,4 +36019,4 @@ module.exports = {
 	changeTimescale,
 	toggleStockChart
 }
-},{"./c3-chart.js":46,"./c3-helpers.js":47,"jquery":30,"socket.io-client":35}]},{},[48]);
+},{"./c3-chart.js":47,"./c3-helpers.js":48,"bez":5,"jquery":31,"socket.io-client":36}]},{},[49]);

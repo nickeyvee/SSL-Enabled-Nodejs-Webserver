@@ -1,6 +1,7 @@
 'use strict';
 
 const $ = require("jquery");
+const bez = require('bez');
 const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
@@ -26,8 +27,8 @@ $.ajax({
 	method: 'GET'
 }).then(function (data) {
 	// store in client.
-	console.log('store in client');
-	console.log(data);
+	// console.log('store in client');
+	// console.log(data);
 	data.map(stock => {
 		localData.push(stock);
 	})
@@ -39,9 +40,9 @@ $.ajax({
 	c3_chart.draw(d.dates, d.prices);
 
 	// CHECK
-	console.log('INIT');
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('INIT');
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 
 });
 
@@ -57,7 +58,7 @@ function addStock(symbol, range) {
 			'range': range
 		},
 		success: function (data) {
-			console.log("Data Added");
+			// console.log("Data Added");
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -80,8 +81,8 @@ function addStock(symbol, range) {
 			})
 
 			// CHECK
-			console.log('CURRENT : ', symbol_current);
-			console.log(localData.map(d => d[0].symbol));
+			// console.log('CURRENT : ', symbol_current);
+			// console.log(localData.map(d => d[0].symbol));
 		},
 		error: function (err) {
 			throw new Error(err);
@@ -99,7 +100,7 @@ function deleteStock(symbol) {
 			'symbol': symbol
 		},
 		success: function (data) {
-			console.log("DELETE REQUEST COMPLETE");
+			// console.log("DELETE REQUEST COMPLETE");
 
 			// reset local state
 			localData.splice(0, localData.length);
@@ -123,8 +124,8 @@ function deleteStock(symbol) {
 			}
 
 			// CHECK
-			console.log('CURRENT : ', symbol_current);
-			console.log(localData.map(d => d[0].symbol));
+			// console.log('CURRENT : ', symbol_current);
+			// console.log(localData.map(d => d[0].symbol));
 
 			// trigger event on ALL other clients
 			socket.emit('delete', {
@@ -149,8 +150,8 @@ function changeTimescale(symbol, range) {
 			'range': range
 		},
 		success: function (data) {
-			console.log("Data Added");
-			console.log(data, symbol);
+			// console.log("Data Added");
+			// console.log(data, symbol);
 			toggleLoader();
 
 			// reset local state
@@ -188,10 +189,10 @@ function addStockEvent(callback) {
 	const re = /^[A-Z]+$/;
 
 	if (!re.test(symbol)) {
-		console.log('String is invalid');
+		// console.log('String is invalid');
 		return;
 	} else if (symbol.length > 4) {
-		console.log('String is invalid');
+		// console.log('String is invalid');
 		return;
 	}
 
@@ -223,13 +224,23 @@ function deleteStockEvent(el, callback) {
 
 
 function toggleStockChart(el, callback) {
-	const symbol = el.currentTarget.id,
-		d = c3_helpers.mapData(localData, symbol);
+	const symbol = el.currentTarget.id;
+	const d = c3_helpers.mapData(localData, symbol);
 	symbol_current = symbol;
+
+	// update UI
+	const target = $(`#${symbol} .card-title`);
+	$('.js-toggle-ticker .card-title').removeClass('highlight');
+	target.addClass('highlight');
 
 	if (symbol) {
 		callback(d.dates, d.prices, timescale);
 	}
+
+	// trigger event on ALL other clients
+	socket.emit('toggle', {
+		'symbol': symbol
+	});
 }
 
 
@@ -271,7 +282,7 @@ $('.js-time-period').click(el => {
 // ==== SOCKET.IO EVENTS ====
 
 socket.on('add', event => {
-	console.log("ADD EVENT RECIEVED");
+	// console.log("ADD EVENT RECIEVED");
 
 	// update UI
 	ticker_markup(event.symbol);
@@ -291,13 +302,13 @@ socket.on('add', event => {
 	c3_chart.draw(d.dates, d.prices, event.range);
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 })
 
 
 socket.on('timescale', event => {
-	console.log("TIMESCALE EVENT RECIEVED");
+	// console.log("TIMESCALE EVENT RECIEVED");
 
 	// change UI
 	$('.js-time-period').removeClass('active');
@@ -320,13 +331,13 @@ socket.on('timescale', event => {
 	c3_chart.draw(d.dates, d.prices, event.range);
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
 });
 
 
 socket.on('delete', event => {
-	console.log("DELETE EVENT RECIEVED");
+	// console.log("DELETE EVENT RECIEVED");
 
 	// update UI
 	$(`div#${event.symbol}`).parent().remove();
@@ -353,8 +364,22 @@ socket.on('delete', event => {
 	}
 
 	// CHECK
-	console.log('CURRENT : ', symbol_current);
-	console.log(localData.map(d => d[0].symbol));
+	// console.log('CURRENT : ', symbol_current);
+	// console.log(localData.map(d => d[0].symbol));
+})
+
+
+// toggle
+socket.on('toggle', event => {
+	const d = c3_helpers.mapData(localData, event.symbol);
+	symbol_current = event.symbol;
+
+	$('.js-toggle-ticker .card-title').removeClass('highlight');
+	$(`#${event.symbol} .card-title`).addClass('highlight');
+
+	if (event.symbol) {
+		c3_chart.draw(d.dates, d.prices, timescale);
+	}
 })
 
 
@@ -396,7 +421,11 @@ function toggleLoader() {
 
 function topBar(message) {
 	$("<div />", { class: 'topbar', text: message }).hide().prependTo("body")
-		.slideDown('fast').delay(7500).slideUp(function() { $(this).remove(); });
+		.slideDown('fast').delay(7500).slideUp(function () { $(this).remove(); });
+}
+
+function animate(symbol) {
+
 }
 
 
