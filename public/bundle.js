@@ -35435,7 +35435,7 @@ function draw(dates, prices, range) {
 	const months = [
 		'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
-	
+
 	// console.log('\n');
 	// console.log('c3_chart() [function]');
 	// console.log('Dates : ');
@@ -35443,17 +35443,20 @@ function draw(dates, prices, range) {
 	// console.log('Prices : ');
 	// console.log(prices);
 
-	let y_count = 7,
-		date_format = '%Y-%m-%d';
-
-	if (range == 60) {
-		y_count = 6;
-		date_format = '%Y';
-	} else if (range == 1) {
-		date_format = '%m %d';
+	function date_format(date, range, count) {
+		if (range == 60) {
+			return date.getFullYear();
+		} else if (range == 1) {
+			return `${months[date.getMonth()]} ${date.getDate()}`;
+		} else {
+			return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+		}
 	}
 
 	chart = c3.generate({
+		padding: {
+			right: 17
+		},
 		data: {
 			x: 'x',
 			columns: [dates, prices],
@@ -35465,9 +35468,9 @@ function draw(dates, prices, range) {
 			x: {
 				type: 'timeseries',
 				tick: {
-					format: date_format,
-					count: y_count,
-					culling: 6
+					format: d => date_format(new Date(d), range),
+					count: 6,
+					culling: 6,
 				},
 				show: true
 			},
@@ -35486,7 +35489,6 @@ function draw(dates, prices, range) {
 	// apply css :
 	$(`#chart .c3-line-${prices[0]}`).css({ "stroke-width": "2px" });
 }
-
 
 function erase() {
 	chart = chart.destroy();
@@ -35540,9 +35542,10 @@ const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
+const url = "http://localhost:5000";
 
 // make connection with websockets
-const socket = io.connect("https://oceandroplet.com"); // http://localhost:5000
+const socket = io.connect(location.href);
 const localData = [];
 
 let timescale = 12;
@@ -35560,6 +35563,8 @@ $.ajax({
 	method: 'GET'
 }).then(function (data) {
 	// store in client.
+	console.log('store in client');
+	console.log(data);
 	data.map(stock => {
 		localData.push(stock);
 	})
@@ -35620,6 +35625,8 @@ function addStock(symbol, range) {
 		}
 	});
 }
+
+// ==== DELETE A STOCK ====
 
 function deleteStock(symbol) {
 	$.ajax({
@@ -35732,8 +35739,8 @@ function addStockEvent(callback) {
 	}
 	ticker_markup(symbol);
 
-	console.log('\n');
-	console.log('Timescale', timescale);
+	// console.log('\n');
+	// console.log('Timescale', timescale);
 
 	if (callback) {
 		callback(symbol, timescale);
@@ -35927,5 +35934,13 @@ function toggleLoader() {
 function topBar(message) {
 	$("<div />", { class: 'topbar', text: message }).hide().prependTo("body")
 		.slideDown('fast').delay(7500).slideUp(function() { $(this).remove(); });
+}
+
+
+module.exports = {
+	addStock,
+	deleteStock,
+	changeTimescale,
+	toggleStockChart
 }
 },{"./c3-chart.js":46,"./c3-helpers.js":47,"jquery":30,"socket.io-client":35}]},{},[48]);

@@ -5,9 +5,10 @@ const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
 
+const url = "http://localhost:5000";
 
 // make connection with websockets
-const socket = io.connect("https://oceandroplet.com"); // http://localhost:5000
+const socket = io.connect(location.href);
 const localData = [];
 
 let timescale = 12;
@@ -25,6 +26,8 @@ $.ajax({
 	method: 'GET'
 }).then(function (data) {
 	// store in client.
+	console.log('store in client');
+	console.log(data);
 	data.map(stock => {
 		localData.push(stock);
 	})
@@ -85,6 +88,8 @@ function addStock(symbol, range) {
 		}
 	});
 }
+
+// ==== DELETE A STOCK ====
 
 function deleteStock(symbol) {
 	$.ajax({
@@ -197,8 +202,8 @@ function addStockEvent(callback) {
 	}
 	ticker_markup(symbol);
 
-	console.log('\n');
-	console.log('Timescale', timescale);
+	// console.log('\n');
+	// console.log('Timescale', timescale);
 
 	if (callback) {
 		callback(symbol, timescale);
@@ -392,4 +397,12 @@ function toggleLoader() {
 function topBar(message) {
 	$("<div />", { class: 'topbar', text: message }).hide().prependTo("body")
 		.slideDown('fast').delay(7500).slideUp(function() { $(this).remove(); });
+}
+
+
+module.exports = {
+	addStock,
+	deleteStock,
+	changeTimescale,
+	toggleStockChart
 }

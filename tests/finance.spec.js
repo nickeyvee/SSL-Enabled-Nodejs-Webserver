@@ -43,12 +43,12 @@ describe('storeStocksLocally', function () {
 	it('it should save stocks locally', function () {
 		return yahoo.getStocksBySymbol(symbols).then(data => {
 			yahoo.storeStocksLocally(data);
-			expect(yahoo.localStockData).to.not.be.undefined;
-			expect(yahoo.localStockData).to.have.lengthOf(3);
-			expect(yahoo.localStockData[0]).to.be.an('array');
-			expect(yahoo.localStockData[0][0]).to.be.an('object');
-			expect(yahoo.localStockData[0][0].symbol).to.be.a('string');
-			expect(yahoo.localStockData[0][0].close).to.be.a('number');
+			expect(yahoo.localData).to.not.be.undefined;
+			expect(yahoo.localData).to.have.lengthOf(3);
+			expect(yahoo.localData[0]).to.be.an('array');
+			expect(yahoo.localData[0][0]).to.be.an('object');
+			expect(yahoo.localData[0][0].symbol).to.be.a('string');
+			expect(yahoo.localData[0][0].close).to.be.a('number');
 		})
 	})
 });
@@ -56,8 +56,8 @@ describe('storeStocksLocally', function () {
 
 describe('removeStock', function () {
 	it('should reflect changes', function () {
-		expect(yahoo.localStockData).to.have.lengthOf(3);
+		expect(yahoo.localData).to.have.lengthOf(3);
 		yahoo.removeStock('TSLA');
-		expect(yahoo.localStockData).to.have.lengthOf(2);
+		expect(yahoo.localData).to.have.lengthOf(2);
 	})
 })

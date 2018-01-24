@@ -3,10 +3,10 @@
 // ==== YAHOO FINANCE API SERVICE ====
 
 const yahooFinance = require('yahoo-finance');
-const localStockData = [];
+const localData = [];
 
-function deleteLocalStockData() {
-	localStockData.length = 0;
+function deletelocalData() {
+	localData.length = 0;
 }
 
 // ==== GET ONE STOCK FROM YAHOO ====
@@ -107,15 +107,15 @@ function storeStocksLocally(data) {
 	}
 	// save new stocks
 	if (Array.isArray(data)) {
-		localStockData.push(data);
+		localData.push(data);
 	}
 	else if (typeof data == 'object') {
 		for (let company in data) {
 			if (data.hasOwnProperty(company)) {
-				localStockData.push(data[company]);
+				localData.push(data[company]);
 			}
 		}
-		return localStockData;
+		return localData;
 	}
 }
 
@@ -123,27 +123,27 @@ function storeStocksLocally(data) {
 
 function removeStock(symbol) {
 	let index;
-	for (let i = 0; i < localStockData.length; i++) {
+	for (let i = 0; i < localData.length; i++) {
 
-		if (localStockData[i][0].symbol === symbol) {
+		if (localData[i][0].symbol === symbol) {
 			console.log('\n');
 			console.log('FOUND SYMBOL');
 			index = i;
 		}
 	}
 	if (index !== -1) {
-		localStockData.splice(index, 1);
+		localData.splice(index, 1);
 	}
 	console.log('\n');
 	console.log("argument : ", symbol);
 	console.log("found at index : ", index);
-	console.log(localStockData.map(d => d[0].symbol));
+	console.log(localData.map(d => d[0].symbol));
 	console.log('\n');	
 }
 
 
 function getSavedStockNames() {
-	return localStockData.map(stock => {
+	return localData.map(stock => {
 		return {
 			'symbol': stock[0].symbol
 		}
@@ -151,7 +151,7 @@ function getSavedStockNames() {
 }
 
 function removeAll() {
-	localStockData.splice(0, localStockData.length);
+	localData.splice(0, localData.length);
 }
 
 module.exports = {
@@ -159,7 +159,7 @@ module.exports = {
 	getOneStockBySymbol,
 	storeStocksLocally,
 	getSavedStockNames,
-	localStockData,
+	localData,
 	removeStock,
 	removeAll
 }

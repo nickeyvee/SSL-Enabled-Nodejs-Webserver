@@ -17,10 +17,10 @@ router.get('/', function (req, res, next) {
 router.get('/stocks', function (req, res, next) {
 
 	// PRODUCE A JSON DOC FOR TESTS.
-	// const json = JSON.stringify(yahoo.localStockData);
+	// const json = JSON.stringify(yahoo.localData);
 	// fs.writeFile('./tests/mocks/mockfile-60-month.json', json, 'utf8');
 
-	res.json(yahoo.localStockData);
+	res.json(yahoo.localData);
 });
 
 router.post('/add', function (req, res, next) {
@@ -31,7 +31,7 @@ router.post('/add', function (req, res, next) {
 		.then(data => {
 			yahoo.storeStocksLocally(data);
 
-			res.json(yahoo.localStockData);
+			res.json(yahoo.localData);
 		})
 });
 
@@ -39,7 +39,7 @@ router.delete('/remove', function (req, res, next) {
 	const symbol = req.body.symbol;
 	yahoo.removeStock(symbol)
 
-	res.json(yahoo.localStockData);
+	res.json(yahoo.localData);
 })
 
 router.post('/timescale', function (req, res, next) {
@@ -55,7 +55,7 @@ router.post('/timescale', function (req, res, next) {
 	yahoo.getStocksBySymbol(stockNames, range)
 		.then(data => {
 			yahoo.storeStocksLocally(data);
-			res.json(yahoo.localStockData);
+			res.json(yahoo.localData);
 		})
 });
 
