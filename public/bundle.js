@@ -35623,6 +35623,12 @@ $.ajax({
 
 	c3_chart.draw(d.dates, d.prices);
 
+	// update UI
+
+	// update UI
+	$('.js-toggle-ticker .card-title').removeClass('highlight');
+	$(`#${symbol_current} .card-title`).addClass('highlight');
+
 	// CHECK
 	// console.log('INIT');
 	// console.log('CURRENT : ', symbol_current);
@@ -35813,9 +35819,8 @@ function toggleStockChart(el, callback) {
 	symbol_current = symbol;
 
 	// update UI
-	const target = $(`#${symbol} .card-title`);
 	$('.js-toggle-ticker .card-title').removeClass('highlight');
-	target.addClass('highlight');
+	$(`#${symbol} .card-title`).addClass('highlight');
 
 	if (symbol) {
 		callback(d.dates, d.prices, timescale);
