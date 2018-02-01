@@ -1,7 +1,6 @@
 'use strict';
 
 const $ = require("jquery");
-const bez = require('bez');
 const io = require('socket.io-client');
 const c3_chart = require('./c3-chart.js');
 const c3_helpers = require('./c3-helpers.js')
@@ -23,7 +22,7 @@ let symbol_current = '';
 // get stock data into our app immediately..
 
 $.ajax({
-	url: '/stocks',
+	url: '/data/stocks',
 	method: 'GET'
 }).then(function (data) {
 	// store in client.
@@ -57,7 +56,7 @@ $.ajax({
 function addStock(symbol, range) {
 	// console.log(range);
 	$.ajax({
-		url: '/add',
+		url: '/data/add',
 		method: 'POST',
 		data: {
 			'symbol': symbol,
@@ -101,7 +100,7 @@ function addStock(symbol, range) {
 function deleteStock(symbol) {
 	$.ajax({
 		type: "DELETE",
-		url: '/remove',
+		url: '/data/remove',
 		data: {
 			'symbol': symbol
 		},
@@ -149,7 +148,7 @@ function deleteStock(symbol) {
 function changeTimescale(symbol, range) {
 	// console.log(range);
 	$.ajax({
-		url: '/timescale',
+		url: '/data/timescale',
 		method: 'POST',
 		data: {
 			'symbol': symbol,
